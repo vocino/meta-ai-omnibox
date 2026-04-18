@@ -1,6 +1,7 @@
 (function backgroundMain() {
   const META_BASE_URL = "https://www.meta.ai/";
-  const PROMPT_PARAM = "extensionPrompt";
+  /** Must match Meta web: www.meta.ai/?prompt=… */
+  const PROMPT_PARAM = "prompt";
 
   function getApi() {
     if (typeof globalThis.browser !== "undefined") return globalThis.browser;
@@ -47,7 +48,7 @@
 
   if (api.omnibox?.setDefaultSuggestion) {
     api.omnibox.setDefaultSuggestion({
-      description: "Meta.ai: %s",
+      description: "Meta: %s",
     });
   }
 

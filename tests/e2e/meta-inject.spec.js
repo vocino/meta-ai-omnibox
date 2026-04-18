@@ -6,7 +6,7 @@ const contentScriptPath = path.resolve(__dirname, "../../extension/content/meta-
 
 function fixtureUrl(prompt) {
   const url = new URL(`file://${fixturePath}`);
-  if (prompt) url.searchParams.set("extensionPrompt", prompt);
+  if (prompt) url.searchParams.set("prompt", prompt);
   return url.toString();
 }
 

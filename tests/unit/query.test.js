@@ -25,9 +25,9 @@ describe("query normalization", () => {
 });
 
 describe("meta url builder", () => {
-  test("adds extensionPrompt for non-empty query", () => {
+  test("adds prompt param for non-empty query", () => {
     const url = buildMetaUrl({ query: "@meta: hello world" });
-    expect(url).toContain("extensionPrompt=hello+world");
+    expect(url).toContain("prompt=hello+world");
   });
 
   test("returns clean base for empty query", () => {
@@ -46,7 +46,7 @@ describe("meta url builder", () => {
   test("encodes special characters in query string", () => {
     const url = buildMetaUrl({ query: "a & b = c?" });
     const parsed = new URL(url);
-    expect(parsed.searchParams.get("extensionPrompt")).toBe("a & b = c?");
+    expect(parsed.searchParams.get("prompt")).toBe("a & b = c?");
   });
 
   test("supports custom base URL", () => {

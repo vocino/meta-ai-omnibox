@@ -1,5 +1,6 @@
 (function metaInjectMain() {
-  const PROMPT_PARAM = "extensionPrompt";
+  /** Same query key as Meta’s own deep links (not a custom param). */
+  const PROMPT_PARAM = "prompt";
   const SUBMIT_MODE_KEY = "submitMode";
   const SUBMIT_MODE_AUTO = "auto";
   const SUBMIT_MODE_MANUAL = "manual";
@@ -126,8 +127,17 @@
     const composer = await waitForComposer();
     if (!composer) return;
 
-    fillComposer(composer, prompt);
-    if (mode === SUBMIT_MODE_AUTO) submitComposer(composer);
+    const existing =
+      composer instanceof HTMLTextAreaElement || composer instanceof HTMLInputElement
+        ? composer.value
+        : composer.textContent || "";
+    const alreadyFilled = existing.trim() === prompt.trim();
+    if (!alreadyFilled) {
+      fillComposer(composer, prompt);
+    }
+    if (mode === SUBMIT_MODE_AUTO && !alreadyFilled) {
+      submitComposer(composer);
+    }
     clearPromptFromUrl();
   }
 

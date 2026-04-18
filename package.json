@@ -1,6 +1,6 @@
 {
   "name": "meta-ai-omnibox",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Use @meta in the omnibox to open Meta.ai chats.",
   "main": "extension/background.js",
   "scripts": {

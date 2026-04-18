@@ -1,5 +1,6 @@
 const META_BASE_URL = "https://www.meta.ai/";
-const PROMPT_PARAM = "extensionPrompt";
+/** Meta.ai honors this param on www (see applink.meta.ai → www.meta.ai/?prompt=). */
+const PROMPT_PARAM = "prompt";
 
 /**
  * Normalize text entered after the omnibox keyword.

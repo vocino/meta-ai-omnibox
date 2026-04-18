@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Meta.ai Omnibox",
-  "short_name": "@meta",
-  "description": "Type @meta in the omnibox to open Meta.ai with a new prompt.",
-  "version": "0.1.0",
+  "name": "Meta",
+  "short_name": "Meta",
+  "description": "Use @meta in the address bar or the Meta search engine to open meta.ai with your prompt.",
+  "version": "0.1.1",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://www.meta.ai/*", "https://meta.ai/*"],
   "icons": {
@@ -18,16 +18,16 @@
   },
   "chrome_settings_overrides": {
     "search_provider": {
-      "name": "Meta.ai",
+      "name": "Meta",
       "keyword": "@meta",
-      "search_url": "https://www.meta.ai/?extensionPrompt={searchTerms}",
+      "search_url": "https://www.meta.ai/?prompt={searchTerms}",
       "encoding": "UTF-8",
       "favicon_url": "icons/icon64.png",
       "is_default": false
     }
   },
   "action": {
-    "default_title": "Open Meta.ai",
+    "default_title": "Open Meta",
     "default_icon": {
       "16": "icons/icon64.png",
       "32": "icons/icon64.png",
