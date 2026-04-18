@@ -58,9 +58,10 @@ The tag-sync job does not wait for CI to finish; keep `main` green before bumpin
 The **Release** workflow can push each **Firefox** zip to [addons.mozilla.org](https://addons.mozilla.org/) using Mozilla’s official [`web-ext sign`](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/#web-ext-sign) (AMO API v5), after the GitHub Release is created.
 
 1. **API credentials:** In AMO, open **[Manage API Keys](https://addons.mozilla.org/en-US/developers/addon/api/key/)** and generate a **JWT issuer** + **secret**.
-2. **GitHub secrets** (repo → *Settings* → *Secrets and variables* → *Actions*):
+2. **GitHub secrets** (repo → *Settings* → *Secrets and variables* → *Actions* — use these **exact** names):
    - `AMO_API_KEY` — JWT issuer string  
    - `AMO_API_SECRET` — JWT secret string  
+   (Environment-specific or differently named secrets are not wired in; rename or duplicate them to match.)
 3. **Enable submits:** Add repository variable **`AMO_SUBMIT`** = `true` (*Settings* → *Secrets and variables* → *Actions* → *Variables*).
 4. **First listed version only:** AMO requires listing metadata (summary, categories, license) once. Set repository variable **`AMO_USE_LISTING_METADATA`** = `true` for the **first** automated (or retry) submission that creates the public listing. The workflow passes [`docs/amo-metadata.json`](../docs/amo-metadata.json). After the add-on is listed, set **`AMO_USE_LISTING_METADATA`** back to `false` (or delete the variable) so **updates** omit that file, per [AMO behavior](https://extensionworkshop.com/documentation/develop/web-ext-command-reference/#amo-metadata).
 5. **`--approval-timeout 0`:** The job does not wait for human review to finish; AMO still reviews the version on their side.

@@ -20,6 +20,12 @@ on:
         required: false
         type: boolean
         default: false
+    # Must be declared here and passed from the parent workflow — inherit alone does not expose repo secrets in reusable workflows.
+    secrets:
+      AMO_API_KEY:
+        required: false
+      AMO_API_SECRET:
+        required: false
 
 permissions:
   contents: write
