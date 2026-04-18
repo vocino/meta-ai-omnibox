@@ -32,12 +32,16 @@ Type `@meta:` in your browser omnibox (or `@meta` followed by a space), or use t
 
 ### Release artifacts
 
-| File | Use |
-| ---- | --- |
-| `meta-ai-omnibox-chromium.zip` | Chrome Web Store, Edge Add-ons, and other Chromium installs |
-| `meta-ai-omnibox-firefox.zip` | [addons.mozilla.org](https://addons.mozilla.org/) (Firefox) |
+Each release includes two versioned zips (same semver as `manifest.json`), for example `meta-ai-omnibox-chromium-v0.1.5.zip` and `meta-ai-omnibox-firefox-v0.1.5.zip`.
 
-Build locally with `npm run pack` (after `npm run verify`), or download from **[GitHub Releases](https://github.com/vocino/meta-ai-omnibox/releases)** when you push a tag like `v0.1.5`. Maintainer checklist: [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md).
+| File pattern | Use |
+| ------------ | --- |
+| `meta-ai-omnibox-chromium-vX.Y.Z.zip` | Chrome Web Store, Edge Add-ons, and other Chromium installs |
+| `meta-ai-omnibox-firefox-vX.Y.Z.zip` | [addons.mozilla.org](https://addons.mozilla.org/) (Firefox) |
+
+**Automation:** merge to `main` with an updated `version` in the extension manifests (and `package.json`). If `v{version}` does not exist yet, the **Release** workflow creates that tag; the tag run builds both zips, uploads workflow artifacts, and publishes a **GitHub Release** with those files. You can still tag manually or use **Actions → Release → Run workflow** to build zips without a release.
+
+Build locally with `npm run pack` (after `npm run verify`), or download from **[GitHub Releases](https://github.com/vocino/meta-ai-omnibox/releases)**. Maintainer checklist: [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md).
 
 > **Store links:** `[link-chrome]`, `[link-edge]`, and `[link-firefox]` should point at the live store listings once approved. Until then they use **GitHub Releases** (same as `[link-releases]`).
 
@@ -79,14 +83,14 @@ The preference is stored in `storage.local` under `submitMode`.
 - E2E tests (Chromium): `npm run test:e2e:chromium`
 - E2E tests (Firefox): `npm run test:e2e:firefox`
 - Full verification: `npm run verify`
-- Package store zips: `npm run pack` → `dist/meta-ai-omnibox-chromium.zip` and `dist/meta-ai-omnibox-firefox.zip`
+- Package store zips: `npm run pack` → `dist/meta-ai-omnibox-chromium-v{version}.zip` and `dist/meta-ai-omnibox-firefox-v{version}.zip` (version from `extension/manifest.json`)
 - `test:all` enforces minimum coverage thresholds for `src/` (see `vitest.config.js`).
 
 ## CI and GitHub Automation
 - PR and push checks run lint, typecheck, unit, integration, and E2E.
 - Nightly regression runs browser E2E to detect Meta.ai DOM drift.
-- **Release** workflow (tags `v*`): runs `verify`, builds both zips via `scripts/pack-extension.sh`, uploads workflow artifacts, and **creates a GitHub Release** with the zip attachments.
-- `workflow_dispatch` on Release runs the same verify + pack steps without creating a GitHub Release (handy for testing the build).
+- **Release** workflow: on **`main`**, syncs a **`v{manifest.version}`** tag when missing; on **`v*`** tags (and manual dispatch), runs `verify`, builds versioned zips via `scripts/pack-extension.sh`, uploads artifacts, and **creates a GitHub Release** with both browser packages when the run was triggered by a tag.
+- `workflow_dispatch` runs verify + pack + artifact upload without creating a GitHub Release (handy for testing the build).
 - Dependabot updates npm dependencies weekly.
 
 ## Manual Verification Checklist
