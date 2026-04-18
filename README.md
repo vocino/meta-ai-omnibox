@@ -72,4 +72,8 @@ The preference is stored in `storage.local` under `submitMode`.
 - Auto mode sends Enter automatically.
 - The `prompt` query parameter is cleared from the address bar after the content script runs (Meta may already have started the chat from the same URL).
 
+## Issues and feedback
+
+If something breaks, behaves oddly, or could work better, please **[open an issue on GitHub](https://github.com/vocino/meta-ai-omnibox/issues)**. Bug reports, feature ideas, and compatibility notes (browser version, OS) are all welcome.
+
 Author: [Vocino](https://threads.net/@vocino)
