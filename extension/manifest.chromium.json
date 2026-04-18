@@ -3,7 +3,7 @@
   "name": "Meta (Unofficial)",
   "short_name": "Meta",
   "description": "Unofficial extension — not affiliated with Meta. Use @meta: in the address bar or the registered search engine to open meta.ai with your prompt.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://www.meta.ai/*", "https://meta.ai/*"],
   "icons": {

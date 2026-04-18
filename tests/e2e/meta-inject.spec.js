@@ -33,3 +33,21 @@ test("auto mode fills and submits prompt", async ({ page }) => {
   await expect(page.locator("#submitted")).toHaveText("true");
   await expect(page).toHaveURL(/meta-mock\.html$/);
 });
+
+test("auto mode still submits when composer was already filled (Meta pre-fill from URL)", async ({
+  page,
+}) => {
+  const prompt = "prefilled from site";
+  await page.goto(fixtureUrl(prompt));
+  await page.evaluate((p) => {
+    const ta = /** @type {HTMLTextAreaElement | null} */ (document.getElementById("composer"));
+    if (ta) ta.value = p;
+  }, prompt);
+  await page.evaluate(() => {
+    window.__META_OMNIBOX_TEST_CONFIG__ = { submitMode: "auto" };
+  });
+  await page.addScriptTag({ path: contentScriptPath });
+
+  await expect(page.locator("#composer")).toHaveValue(prompt);
+  await expect(page.locator("#submitted")).toHaveText("true");
+});

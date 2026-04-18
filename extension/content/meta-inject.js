@@ -86,7 +86,34 @@
     composer.dispatchEvent(new Event("change", { bubbles: true }));
   }
 
+  /**
+   * Meta’s UI uses a send button; synthetic Enter is often ignored by React.
+   * Prefer a visible control whose aria-label suggests “send”.
+   * @param {HTMLElement} composer
+   * @returns {boolean} true if a click was dispatched
+   */
+  function tryClickSendButton(composer) {
+    let node = composer;
+    for (let depth = 0; depth < 14 && node; depth += 1, node = node.parentElement) {
+      const buttons = node.querySelectorAll("button, [role='button']");
+      for (const btn of buttons) {
+        if (!(btn instanceof HTMLElement) || !isVisible(btn)) continue;
+        if (btn.hasAttribute("disabled")) continue;
+        const aria = (btn.getAttribute("aria-label") || "").toLowerCase();
+        if (aria.includes("send")) {
+          btn.click();
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   function submitComposer(composer) {
+    composer.focus();
+    if (tryClickSendButton(composer)) {
+      return;
+    }
     const keyboardEventInit = {
       key: "Enter",
       code: "Enter",
@@ -96,6 +123,7 @@
       cancelable: true,
     };
     composer.dispatchEvent(new KeyboardEvent("keydown", keyboardEventInit));
+    composer.dispatchEvent(new KeyboardEvent("keypress", keyboardEventInit));
     composer.dispatchEvent(new KeyboardEvent("keyup", keyboardEventInit));
   }
 
@@ -135,8 +163,11 @@
     if (!alreadyFilled) {
       fillComposer(composer, prompt);
     }
-    if (mode === SUBMIT_MODE_AUTO && !alreadyFilled) {
-      submitComposer(composer);
+    if (mode === SUBMIT_MODE_AUTO) {
+      // Meta often pre-fills from `?prompt=` before we run; auto-submit must still fire in that case.
+      // Defer one tick so frameworks can commit input state before send.
+      const el = composer;
+      queueMicrotask(() => submitComposer(el));
     }
     clearPromptFromUrl();
   }

@@ -1,6 +1,6 @@
 {
   "name": "meta-ai-omnibox",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Unofficial extension: @meta: omnibox for meta.ai. Not affiliated with Meta.",
   "main": "extension/background.js",
   "scripts": {

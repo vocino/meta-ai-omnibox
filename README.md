@@ -45,7 +45,7 @@ Release ZIPs from CI use the same manifest swap; local dev is easiest with `prep
 ## Settings
 Open extension options and choose:
 - **Manual submit** (default)
-- **Auto-submit**
+- **Auto-submit** — after your prompt is in the composer (including when Meta pre-fills it from `?prompt=`), the extension tries the send button, then simulates Enter.
 
 The preference is stored in `storage.local` under `submitMode`.
 
