@@ -44,6 +44,7 @@ The preference is stored in `storage.local` under `submitMode`.
 - E2E tests (Chromium): `npm run test:e2e:chromium`
 - E2E tests (Firefox): `npm run test:e2e:firefox`
 - Full verification: `npm run verify`
+- `test:all` enforces minimum coverage thresholds for `src/` (see `vitest.config.js`).
 
 ## CI and GitHub Automation
 - PR and push checks run lint, typecheck, unit, integration, and E2E.

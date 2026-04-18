@@ -42,4 +42,23 @@ describe("meta url builder", () => {
     const cleaned = removePromptParam(url);
     expect(cleaned).toBe(META_BASE_URL);
   });
+
+  test("encodes special characters in query string", () => {
+    const url = buildMetaUrl({ query: "a & b = c?" });
+    const parsed = new URL(url);
+    expect(parsed.searchParams.get("extensionPrompt")).toBe("a & b = c?");
+  });
+
+  test("supports custom base URL", () => {
+    const url = buildMetaUrl({
+      baseUrl: "https://meta.ai/chat",
+      query: "hello",
+    });
+    expect(url.startsWith("https://meta.ai/chat")).toBe(true);
+    expect(readPromptFromUrl(url)).toBe("hello");
+  });
+
+  test("normalizeOmniboxQuery strips @META case-insensitively", () => {
+    expect(normalizeOmniboxQuery("@META: Hi")).toBe("Hi");
+  });
 });

@@ -8,6 +8,12 @@ module.exports = defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       reportsDirectory: "coverage",
+      thresholds: {
+        lines: 90,
+        statements: 90,
+        branches: 80,
+        functions: 90,
+      },
     },
   },
 });
