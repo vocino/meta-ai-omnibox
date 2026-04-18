@@ -143,6 +143,7 @@ jobs:
       checkout_ref: ${{ needs.sync-release-gate.outputs.ref_to_build }}
       create_github_release: true
       release_tag_name: ${{ needs.sync-release-gate.outputs.tag_name }}
+      submit_to_amo: ${{ vars.AMO_SUBMIT == 'true' }}
     secrets: inherit
 
   tag-release:
@@ -152,6 +153,7 @@ jobs:
       checkout_ref: ${{ github.ref }}
       create_github_release: true
       release_tag_name: ${{ github.ref_name }}
+      submit_to_amo: ${{ vars.AMO_SUBMIT == 'true' }}
     secrets: inherit
 
   dispatch-release:
@@ -161,6 +163,7 @@ jobs:
       checkout_ref: ${{ github.event.inputs.publish_tag }}
       create_github_release: true
       release_tag_name: ${{ github.event.inputs.publish_tag }}
+      submit_to_amo: ${{ vars.AMO_SUBMIT == 'true' }}
     secrets: inherit
 
   smoke-pack:
@@ -170,4 +173,5 @@ jobs:
       checkout_ref: ${{ github.sha }}
       create_github_release: false
       release_tag_name: ""
+      submit_to_amo: false
     secrets: inherit

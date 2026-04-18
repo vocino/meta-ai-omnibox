@@ -1,0 +1,10 @@
+{
+  "summary": {
+    "en-US": "Unofficial omnibox / search keyword for Meta AI (meta.ai). Not affiliated with Meta. Opens prompts via @meta: or the registered search engine."
+  },
+  "categories": ["other"],
+  "version": {
+    "license": "MIT",
+    "approval_notes": "Plain JavaScript sources in repo https://github.com/vocino/meta-ai-omnibox — tag matches submission."
+  }
+}

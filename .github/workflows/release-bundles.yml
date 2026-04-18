@@ -15,6 +15,11 @@ on:
         required: false
         type: string
         default: ""
+      # When true (set from repo variable AMO_SUBMIT), upload Firefox zip to addons.mozilla.org via web-ext.
+      submit_to_amo:
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -84,3 +89,17 @@ jobs:
           make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Submit Firefox add-on to AMO
+        if: inputs.submit_to_amo
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+          AMO_USE_LISTING_METADATA: ${{ vars.AMO_USE_LISTING_METADATA }}
+        run: |
+          set -euo pipefail
+          if [ -z "${WEB_EXT_API_KEY}" ] || [ -z "${WEB_EXT_API_SECRET}" ]; then
+            echo "::error::AMO_SUBMIT is enabled (repo variable AMO_SUBMIT=true) but AMO_API_KEY or AMO_API_SECRET is not configured."
+            exit 1
+          fi
+          bash scripts/submit-amo.sh "dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip"

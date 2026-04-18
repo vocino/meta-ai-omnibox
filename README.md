@@ -91,6 +91,7 @@ The preference is stored in `storage.local` under `submitMode`.
 - PR and push checks run aligned-version guard, lint, typecheck, unit, integration, and E2E.
 - Nightly regression runs browser E2E to detect Meta.ai DOM drift.
 - **Release** workflow: on **`main`**, creates **`v{manifest.version}`** when missing; **only the tag-triggered run** publishes a new GitHub Release for a fresh tag (avoids duplicate publishers). If the tag already existed without a release, the next **`main`** run **backfills** the Release. All pack + release steps live in **`release-bundles.yml`** (reusable) so Chromium and Firefox assets stay consistent.
+- **Firefox AMO (optional):** set repo variable **`AMO_SUBMIT=true`** and secrets **`AMO_API_KEY`** / **`AMO_API_SECRET`** so tagged releases also run **`web-ext sign`** against the Firefox zip. First-time listing: see [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md#automated-submit-ci).
 - `workflow_dispatch` with an empty **publish_tag** runs verify + pack + artifact upload only (no GitHub Release).
 - Dependabot updates npm dependencies weekly.
 
