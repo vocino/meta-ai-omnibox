@@ -21,14 +21,13 @@ mkdir -p "$SRC"
 unzip -q -d "$SRC" "$ZIP"
 
 args=(sign --source-dir "$SRC" --channel listed --approval-timeout 0)
-if [[ "${AMO_USE_LISTING_METADATA:-false}" == "true" ]]; then
-  meta="$ROOT/docs/amo-metadata.json"
-  if [[ -f "$meta" ]]; then
-    args+=(--amo-metadata "$meta")
-  else
-    echo "AMO_USE_LISTING_METADATA=true but $meta missing" >&2
-    exit 1
-  fi
+meta="$ROOT/docs/amo-metadata.json"
+if [[ ! -f "$meta" ]] && [[ -n "${GITHUB_REPOSITORY:-}" ]]; then
+  mkdir -p "$ROOT/docs"
+  curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/docs/amo-metadata.json" -o "$meta" || true
+fi
+if [[ -f "$meta" ]]; then
+  args+=(--amo-metadata "$meta")
 fi
 
 cd "$ROOT"

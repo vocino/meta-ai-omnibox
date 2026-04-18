@@ -105,7 +105,6 @@ jobs:
           WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
           S_AMO_SECRET: ${{ secrets.AMO_API_SECRET }}
           S_MOZ_FALLBACK: ${{ secrets.MOZ_AMO_JWT_SECRET }}
-          AMO_USE_LISTING_METADATA: ${{ vars.AMO_USE_LISTING_METADATA }}
         run: |
           set -euo pipefail
           export WEB_EXT_API_SECRET="${S_AMO_SECRET:-${S_MOZ_FALLBACK:-}}"
@@ -125,13 +124,17 @@ jobs:
           mkdir -p "${SRC}"
           unzip -q -d "${SRC}" "${ZIP}"
           wargs=(sign --source-dir "${SRC}" --channel listed --approval-timeout 0)
-          if [ "${AMO_USE_LISTING_METADATA:-false}" = "true" ]; then
-            meta="${ROOT}/docs/amo-metadata.json"
-            if [ -f "${meta}" ]; then
-              wargs+=(--amo-metadata "${meta}")
-            else
-              echo "::warning::docs/amo-metadata.json missing at this ref — submitting without listing metadata (fine for updates; add file on main for first-time listing)."
-            fi
+          # Listed uploads require license metadata; old tags may not include docs/ — pull from default branch.
+          meta="${ROOT}/docs/amo-metadata.json"
+          if [ ! -f "${meta}" ]; then
+            mkdir -p "${ROOT}/docs"
+            curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/main/docs/amo-metadata.json" -o "${meta}"
+          fi
+          if [ -f "${meta}" ]; then
+            wargs+=(--amo-metadata "${meta}")
+          else
+            echo "::error::No docs/amo-metadata.json in tree and could not fetch from main. Add the file on main or set AMO_USE_LISTING_METADATA workflows off until it exists."
+            exit 1
           fi
           cd "${ROOT}"
           npx web-ext@8 "${wargs[@]}"
