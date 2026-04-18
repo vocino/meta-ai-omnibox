@@ -28,6 +28,8 @@ Or download the same files from **[GitHub Releases](https://github.com/vocino/me
 
 The tag-sync job does not wait for CI to finish; keep `main` green before bumping the version, or fix forward and bump again so a new tag is created.
 
+**Consistency:** `npm run verify` starts with `verify:versions`, which requires the same semver in `package.json`, `extension/manifest.json`, `manifest.chromium.json`, and `manifest.firefox.json`. **Release** repacks are implemented in a single reusable workflow so Chromium/Firefox zips and the GitHub Release step stay in sync.
+
 ## Chrome Web Store
 
 1. [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)

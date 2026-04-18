@@ -13,7 +13,8 @@
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:firefox": "playwright test --project=firefox",
     "test:e2e": "playwright test",
-    "verify": "npm run lint && npm run typecheck && npm run test:all && npm run test:e2e",
+    "verify:versions": "node scripts/verify-extension-versions.js",
+    "verify": "npm run verify:versions && npm run lint && npm run typecheck && npm run test:all && npm run test:e2e",
     "prepare:firefox": "node scripts/prepare-firefox.js",
     "pack": "bash scripts/pack-extension.sh"
   },

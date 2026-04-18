@@ -1,0 +1,86 @@
+# Callable only — verify, pack both browser zips, optionally create a GitHub Release.
+name: Release bundles
+
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        required: true
+        type: string
+      create_github_release:
+        required: false
+        type: boolean
+        default: false
+      release_tag_name:
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    name: Extension bundles
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.checkout_ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Verify all checks
+        run: npm run verify
+
+      - name: Build release zips
+        id: pack
+        run: |
+          bash scripts/pack-extension.sh
+          v=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Assert release tag matches manifest
+        if: inputs.create_github_release
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag_name }}
+        run: |
+          test -n "$RELEASE_TAG"
+          TAG_VER="${RELEASE_TAG#v}"
+          MANIFEST_VER=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
+          test "$TAG_VER" = "$MANIFEST_VER"
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-bundles-v${{ steps.pack.outputs.version }}
+          path: |
+            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
+            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
+
+      - name: Create GitHub Release
+        if: inputs.create_github_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag_name }}
+          name: ${{ inputs.release_tag_name }}
+          files: |
+            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
+            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

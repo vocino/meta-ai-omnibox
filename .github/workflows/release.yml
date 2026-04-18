@@ -14,6 +14,7 @@ on:
     tags:
       - "v*"
 
+# One in-flight run per ref (main vs each tag); never cancel — avoids half-published releases.
 concurrency:
   group: release-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
@@ -22,15 +23,18 @@ permissions:
   contents: write
 
 jobs:
-  # When main advances, create v{manifest.version} if that tag does not exist yet.
+  # Creates v{manifest.version} on this commit when missing. Outputs whether the tag already existed.
   ensure-version-tag:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      tag_created: ${{ steps.sync.outputs.tag_created }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Sync git tag from manifest version
+        id: sync
         uses: actions/github-script@v7
         with:
           script: |
@@ -41,6 +45,7 @@ jobs:
             const version = manifest.version;
             const tag = `v${version}`;
             const shortRef = `tags/${tag}`;
+            let tagCreated = "false";
             try {
               await github.rest.git.getRef({
                 owner: context.repo.owner,
@@ -57,13 +62,23 @@ jobs:
                 sha: context.sha,
               });
               core.info(`Created ${tag} at ${context.sha}`);
+              tagCreated = "true";
             }
+            core.setOutput("tag_created", tagCreated);
 
-  # Tag existed before automation, or release failed: publish assets from the tag commit when no GitHub Release exists.
-  sync-release-from-main:
+  # When the tag already pointed at this release line, main may never get a tag *push* event.
+  # Skip this if we just created the tag — the tag-triggered run publishes the release (no duplicate race).
+  sync-release-gate:
     needs: ensure-version-tag
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.ensure-version-tag.outputs.tag_created != 'true'
     runs-on: ubuntu-latest
+    outputs:
+      publish: ${{ steps.gate.outputs.publish }}
+      ref_to_build: ${{ steps.gate.outputs.ref_to_build }}
+      tag_name: ${{ steps.gate.outputs.tag_name }}
     steps:
       - name: Checkout main (read manifest)
         uses: actions/checkout@v4
@@ -120,211 +135,39 @@ jobs:
               } else throw e;
             }
 
-      - name: Checkout tag commit
-        if: steps.gate.outputs.publish == 'true'
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.gate.outputs.ref_to_build }}
-
-      - name: Setup Node
-        if: steps.gate.outputs.publish == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        if: steps.gate.outputs.publish == 'true'
-        run: npm ci
-
-      - name: Install Playwright browsers
-        if: steps.gate.outputs.publish == 'true'
-        run: npx playwright install --with-deps chromium firefox
-
-      - name: Verify all checks
-        if: steps.gate.outputs.publish == 'true'
-        run: npm run verify
-
-      - name: Build release zips
-        if: steps.gate.outputs.publish == 'true'
-        id: pack
-        run: |
-          bash scripts/pack-extension.sh
-          v=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-
-      - name: Upload workflow artifacts
-        if: steps.gate.outputs.publish == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-bundles-v${{ steps.pack.outputs.version }}
-          path: |
-            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
-            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
-
-      - name: Create GitHub Release
-        if: steps.gate.outputs.publish == 'true'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.gate.outputs.tag_name }}
-          name: ${{ steps.gate.outputs.tag_name }}
-          files: |
-            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
-            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  sync-release-bundles:
+    needs: sync-release-gate
+    if: needs.sync-release-gate.outputs.publish == 'true'
+    uses: ./.github/workflows/release-bundles.yml
+    with:
+      checkout_ref: ${{ needs.sync-release-gate.outputs.ref_to_build }}
+      create_github_release: true
+      release_tag_name: ${{ needs.sync-release-gate.outputs.tag_name }}
+    secrets: inherit
 
   tag-release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox
-
-      - name: Verify all checks
-        run: npm run verify
-
-      - name: Build release zips
-        id: pack
-        run: |
-          bash scripts/pack-extension.sh
-          v=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-
-      - name: Assert tag matches manifest version
-        run: |
-          TAG_VER="${GITHUB_REF_NAME#v}"
-          MANIFEST_VER=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
-          test "$TAG_VER" = "$MANIFEST_VER"
-
-      - name: Upload workflow artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-bundles-v${{ steps.pack.outputs.version }}
-          path: |
-            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
-            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          files: |
-            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
-            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: ./.github/workflows/release-bundles.yml
+    with:
+      checkout_ref: ${{ github.ref }}
+      create_github_release: true
+      release_tag_name: ${{ github.ref_name }}
+    secrets: inherit
 
   dispatch-release:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_tag != ''
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.publish_tag }}
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox
-
-      - name: Verify all checks
-        run: npm run verify
-
-      - name: Build release zips
-        id: pack
-        run: |
-          bash scripts/pack-extension.sh
-          v=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-
-      - name: Assert tag matches manifest version
-        env:
-          PUBLISH_TAG: ${{ github.event.inputs.publish_tag }}
-        run: |
-          TAG_VER="${PUBLISH_TAG#v}"
-          MANIFEST_VER=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
-          test "$TAG_VER" = "$MANIFEST_VER"
-
-      - name: Upload workflow artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-bundles-v${{ steps.pack.outputs.version }}
-          path: |
-            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
-            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.publish_tag }}
-          name: ${{ github.event.inputs.publish_tag }}
-          files: |
-            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
-            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
-          generate_release_notes: true
-          fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: ./.github/workflows/release-bundles.yml
+    with:
+      checkout_ref: ${{ github.event.inputs.publish_tag }}
+      create_github_release: true
+      release_tag_name: ${{ github.event.inputs.publish_tag }}
+    secrets: inherit
 
   smoke-pack:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_tag == ''
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium firefox
-
-      - name: Verify all checks
-        run: npm run verify
-
-      - name: Build release zips
-        id: pack
-        run: |
-          bash scripts/pack-extension.sh
-          v=$(python3 -c "import json; print(json.load(open('extension/manifest.json'))['version'])")
-          echo "version=$v" >> "$GITHUB_OUTPUT"
-
-      - name: Upload workflow artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: extension-bundles-v${{ steps.pack.outputs.version }}
-          path: |
-            dist/meta-ai-omnibox-chromium-v${{ steps.pack.outputs.version }}.zip
-            dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip
+    uses: ./.github/workflows/release-bundles.yml
+    with:
+      checkout_ref: ${{ github.sha }}
+      create_github_release: false
+      release_tag_name: ""
+    secrets: inherit
