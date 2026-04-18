@@ -39,7 +39,7 @@ Each release includes two versioned zips (same semver as `manifest.json`), for e
 | `meta-ai-omnibox-chromium-vX.Y.Z.zip` | Chrome Web Store, Edge Add-ons, and other Chromium installs |
 | `meta-ai-omnibox-firefox-vX.Y.Z.zip` | [addons.mozilla.org](https://addons.mozilla.org/) (Firefox) |
 
-**Automation:** merge to `main` with an updated `version` in the extension manifests (and `package.json`). If `v{version}` does not exist yet, the **Release** workflow creates that tag; the tag run builds both zips, uploads workflow artifacts, and publishes a **GitHub Release** with those files. You can still tag manually or use **Actions → Release → Run workflow** to build zips without a release.
+**Automation:** merge to `main` with an updated `version` in the extension manifests (and `package.json`). If `v{version}` does not exist yet, the **Release** workflow creates that tag; the tag run builds both zips, uploads workflow artifacts, and publishes a **GitHub Release** with those files. If the tag **already existed** (no tag push event), a follow-up job on `main` still creates the **Release** and attaches **both** `meta-ai-omnibox-chromium-v*.zip` and `meta-ai-omnibox-firefox-v*.zip` when one is missing. To publish a specific tag by hand, use **Actions → Release → Run workflow** and set **publish_tag** to e.g. `v0.1.5`; leave it empty to only verify and upload artifacts (no Release).
 
 Build locally with `npm run pack` (after `npm run verify`), or download from **[GitHub Releases](https://github.com/vocino/meta-ai-omnibox/releases)**. Maintainer checklist: [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md).
 

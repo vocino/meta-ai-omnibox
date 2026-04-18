@@ -23,7 +23,7 @@ Or download the same files from **[GitHub Releases](https://github.com/vocino/me
 
 1. Bump `version` in `extension/manifest.json`, `extension/manifest.chromium.json`, `extension/manifest.firefox.json`, and `package.json`, then merge to **`main`**.
 2. **Automatic:** the **Release** workflow creates the git tag **`v{version}`** on that commit if it does not already exist. That tag push runs tests, builds both zips, and opens a **GitHub Release** with `generate_release_notes` plus the two zip attachments.
-3. **Manual:** you can still `git tag vX.Y.Z && git push origin vX.Y.Z`, or use **Actions → Release → Run workflow** to produce artifacts only (no GitHub Release).
+3. **Manual:** you can still `git tag vX.Y.Z && git push origin vX.Y.Z`, or use **Actions → Release → Run workflow** with **publish_tag** set to `vX.Y.Z` to build that ref and create/update the GitHub Release (both zips). Leave **publish_tag** empty to verify and upload workflow artifacts only.
 4. Upload each zip to the appropriate store (below).
 
 The tag-sync job does not wait for CI to finish; keep `main` green before bumping the version, or fix forward and bump again so a new tag is created.
