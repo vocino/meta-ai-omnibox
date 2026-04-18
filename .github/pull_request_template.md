@@ -2,6 +2,8 @@
 - describe what changed
 - link related issue(s)
 
+This repository is an **unofficial** community project and is not affiliated with Meta.
+
 ## Testing
 - [ ] `npm run lint:all`
 - [ ] `npm run typecheck`

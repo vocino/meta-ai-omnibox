@@ -1,7 +1,7 @@
 {
   "name": "meta-ai-omnibox",
-  "version": "0.1.1",
-  "description": "Use @meta in the omnibox to open Meta.ai chats.",
+  "version": "0.1.2",
+  "description": "Unofficial extension: @meta omnibox for meta.ai. Not affiliated with Meta.",
   "main": "extension/background.js",
   "scripts": {
     "lint": "eslint . --cache",
