@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "lib": ["ES2022", "DOM"],
+    "types": ["node", "vitest/globals"]
+  },
+  "include": ["src/**/*.js", "extension/**/*.js", "tests/**/*.js", "types/**/*.d.ts"]
+}

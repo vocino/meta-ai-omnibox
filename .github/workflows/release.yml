@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium firefox
+
+      - name: Verify all checks
+        run: npm run verify
+
+  package:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build release directories
+        run: |
+          mkdir -p dist/chromium dist/firefox
+          cp -R extension/* dist/chromium/
+          cp -R extension/* dist/firefox/
+          cp extension/manifest.firefox.json dist/firefox/manifest.json
+          rm dist/chromium/manifest.firefox.json dist/chromium/manifest.chromium.json
+          rm dist/firefox/manifest.firefox.json dist/firefox/manifest.chromium.json
+
+      - name: Archive extension bundles
+        run: |
+          cd dist/chromium && zip -r ../meta-ai-omnibox-chromium.zip .
+          cd ../firefox && zip -r ../meta-ai-omnibox-firefox.zip .
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-bundles
+          path: |
+            dist/meta-ai-omnibox-chromium.zip
+            dist/meta-ai-omnibox-firefox.zip

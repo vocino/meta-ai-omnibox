@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Meta Mock</title>
+  </head>
+  <body>
+    <main>
+      <textarea id="composer" aria-label="Message Meta AI"></textarea>
+      <p id="submitted">false</p>
+    </main>
+    <script>
+      const composer = document.getElementById("composer");
+      const submitted = document.getElementById("submitted");
+      composer.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") submitted.textContent = "true";
+      });
+    </script>
+  </body>
+</html>

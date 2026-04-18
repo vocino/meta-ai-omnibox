@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meta Omnibox Settings</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 24px;
+        color: #111827;
+      }
+      fieldset {
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        max-width: 420px;
+      }
+      legend {
+        font-weight: 600;
+      }
+      label {
+        display: block;
+        margin: 10px 0;
+      }
+      #status {
+        margin-top: 12px;
+        color: #065f46;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Meta Omnibox Settings</h1>
+    <p>Choose what happens after `@meta: your prompt` fills the Meta.ai composer.</p>
+
+    <fieldset>
+      <legend>Submit Mode</legend>
+      <label>
+        <input type="radio" name="submitMode" value="manual" />
+        Manual submit (recommended)
+      </label>
+      <label>
+        <input type="radio" name="submitMode" value="auto" />
+        Auto-submit immediately
+      </label>
+    </fieldset>
+
+    <p id="status" aria-live="polite"></p>
+
+    <script src="options.js"></script>
+  </body>
+</html>

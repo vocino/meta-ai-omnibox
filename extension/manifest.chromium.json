@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Meta.ai Omnibox",
+  "short_name": "@meta",
+  "description": "Type @meta in the omnibox to open Meta.ai with a new prompt.",
+  "version": "0.1.0",
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["https://www.meta.ai/*", "https://meta.ai/*"],
+  "omnibox": {
+    "keyword": "@meta"
+  },
+  "action": {
+    "default_title": "Open Meta.ai"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.meta.ai/*", "https://meta.ai/*"],
+      "js": ["content/meta-inject.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "options_page": "options.html",
+  "minimum_chrome_version": "110"
+}

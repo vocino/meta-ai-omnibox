@@ -1,0 +1,46 @@
+{
+  "name": "meta-ai-omnibox",
+  "version": "0.1.0",
+  "description": "Use @meta in the omnibox to open Meta.ai chats.",
+  "main": "extension/background.js",
+  "scripts": {
+    "lint": "eslint . --cache",
+    "lint:all": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "test:unit": "vitest run tests/unit --coverage.enabled=false",
+    "test:integration": "vitest run tests/integration --coverage.enabled=false",
+    "test:all": "vitest run --coverage.enabled=true",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e": "playwright test",
+    "verify": "npm run lint && npm run typecheck && npm run test:all && npm run test:e2e"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vocino/meta-ai-omnibox.git"
+  },
+  "keywords": [
+    "meta",
+    "omnibox",
+    "extension",
+    "webextension"
+  ],
+  "author": "Travis Vocino",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/vocino/meta-ai-omnibox/issues"
+  },
+  "homepage": "https://github.com/vocino/meta-ai-omnibox#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.59.1",
+    "@types/node": "^25.6.0",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^10.2.1",
+    "globals": "^17.5.0",
+    "jsdom": "^29.0.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.4"
+  }
+}
