@@ -26,6 +26,9 @@ on:
         required: false
       AMO_API_SECRET:
         required: false
+      # Optional fallback if AMO_API_SECRET stays empty in Actions (paste same Mozilla JWT secret here).
+      MOZ_AMO_JWT_SECRET:
+        required: false
 
 permissions:
   contents: write
@@ -100,15 +103,17 @@ jobs:
         if: inputs.submit_to_amo
         env:
           WEB_EXT_API_KEY: ${{ secrets.AMO_API_KEY }}
-          WEB_EXT_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+          S_AMO_SECRET: ${{ secrets.AMO_API_SECRET }}
+          S_MOZ_FALLBACK: ${{ secrets.MOZ_AMO_JWT_SECRET }}
           AMO_USE_LISTING_METADATA: ${{ vars.AMO_USE_LISTING_METADATA }}
         run: |
           set -euo pipefail
+          export WEB_EXT_API_SECRET="${S_AMO_SECRET:-${S_MOZ_FALLBACK:-}}"
           missing=()
           [ -z "${WEB_EXT_API_KEY}" ] && missing+=(AMO_API_KEY)
-          [ -z "${WEB_EXT_API_SECRET}" ] && missing+=(AMO_API_SECRET)
+          [ -z "${WEB_EXT_API_SECRET}" ] && missing+=("AMO_API_SECRET or MOZ_AMO_JWT_SECRET")
           if [ "${#missing[@]}" -ne 0 ]; then
-            echo "::error::Missing repository secrets (exact names): ${missing[*]}. Add them under Settings → Secrets and variables → Actions → Repository secrets. Environment-only secrets are not visible here unless the job sets \`environment:\`."
+            echo "::error::Missing repository secrets: ${missing[*]}. Set AMO_API_KEY and either AMO_API_SECRET or MOZ_AMO_JWT_SECRET (same JWT secret from AMO) under Settings → Secrets and variables → Actions → Repository secrets."
             exit 1
           fi
           bash scripts/submit-amo.sh "dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip"

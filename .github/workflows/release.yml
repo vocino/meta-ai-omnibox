@@ -147,6 +147,7 @@ jobs:
     secrets:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
       AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+      MOZ_AMO_JWT_SECRET: ${{ secrets.MOZ_AMO_JWT_SECRET }}
 
   tag-release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
@@ -159,6 +160,7 @@ jobs:
     secrets:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
       AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+      MOZ_AMO_JWT_SECRET: ${{ secrets.MOZ_AMO_JWT_SECRET }}
 
   dispatch-release:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_tag != ''
@@ -171,6 +173,7 @@ jobs:
     secrets:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
       AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+      MOZ_AMO_JWT_SECRET: ${{ secrets.MOZ_AMO_JWT_SECRET }}
 
   smoke-pack:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_tag == ''
@@ -183,3 +186,4 @@ jobs:
     secrets:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
       AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
+      MOZ_AMO_JWT_SECRET: ${{ secrets.MOZ_AMO_JWT_SECRET }}
