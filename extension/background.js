@@ -12,10 +12,7 @@
   function normalizeOmniboxQuery(input) {
     if (typeof input !== "string") return "";
     let value = input.trim();
-
-    if (value.toLowerCase().startsWith("@meta")) {
-      value = value.slice("@meta".length).trim();
-    }
+    value = value.replace(/^@meta/i, "").trim();
 
     if (value.startsWith(":")) {
       value = value.slice(1).trim();
@@ -48,7 +45,7 @@
 
   if (api.omnibox?.setDefaultSuggestion) {
     api.omnibox.setDefaultSuggestion({
-      description: "Meta (Unofficial): %s",
+      description: "@Meta %s",
     });
   }
 

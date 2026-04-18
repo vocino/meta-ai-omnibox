@@ -4,7 +4,8 @@ const PROMPT_PARAM = "prompt";
 
 /**
  * Normalize text entered after the omnibox keyword.
- * Supports `@meta query` and `@meta: query` forms.
+ * Registered keyword is `@Meta`; `@meta` / `@META` still work (case-insensitive).
+ * Supports `@Meta query` and `@Meta: query` forms.
  * @param {string} input
  * @returns {string}
  */
@@ -12,9 +13,7 @@ function normalizeOmniboxQuery(input) {
   if (typeof input !== "string") return "";
   let value = input.trim();
 
-  if (value.toLowerCase().startsWith("@meta")) {
-    value = value.slice("@meta".length).trim();
-  }
+  value = value.replace(/^@meta/i, "").trim();
 
   if (value.startsWith(":")) {
     value = value.slice(1).trim();

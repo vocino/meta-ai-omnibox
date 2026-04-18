@@ -7,7 +7,11 @@ const {
 } = require("../../src/query");
 
 describe("query normalization", () => {
-  test("handles @meta: query", () => {
+  test("handles @Meta: query", () => {
+    expect(normalizeOmniboxQuery("@Meta: latest ai news")).toBe("latest ai news");
+  });
+
+  test("still accepts lowercase @meta for the same keyword", () => {
     expect(normalizeOmniboxQuery("@meta: latest ai news")).toBe("latest ai news");
   });
 
@@ -26,7 +30,7 @@ describe("query normalization", () => {
 
 describe("meta url builder", () => {
   test("adds prompt param for non-empty query", () => {
-    const url = buildMetaUrl({ query: "@meta: hello world" });
+    const url = buildMetaUrl({ query: "@Meta: hello world" });
     expect(url).toContain("prompt=hello+world");
   });
 
