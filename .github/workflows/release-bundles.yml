@@ -116,4 +116,22 @@ jobs:
             echo "::error::Missing repository secrets: ${missing[*]}. Set AMO_API_KEY and either AMO_API_SECRET or MOZ_AMO_JWT_SECRET (same JWT secret from AMO) under Settings → Secrets and variables → Actions → Repository secrets."
             exit 1
           fi
-          bash scripts/submit-amo.sh "dist/meta-ai-omnibox-firefox-v${{ steps.pack.outputs.version }}.zip"
+          # Inline AMO submit (do not rely on scripts/submit-amo.sh — tag checkouts may predate that file).
+          VER="${{ steps.pack.outputs.version }}"
+          ZIP="dist/meta-ai-omnibox-firefox-v${VER}.zip"
+          ROOT="${GITHUB_WORKSPACE}"
+          SRC="${ROOT}/dist/amo-submit"
+          rm -rf "${SRC}"
+          mkdir -p "${SRC}"
+          unzip -q -d "${SRC}" "${ZIP}"
+          wargs=(sign --source-dir "${SRC}" --channel listed --approval-timeout 0)
+          if [ "${AMO_USE_LISTING_METADATA:-false}" = "true" ]; then
+            meta="${ROOT}/docs/amo-metadata.json"
+            if [ -f "${meta}" ]; then
+              wargs+=(--amo-metadata "${meta}")
+            else
+              echo "::warning::docs/amo-metadata.json missing at this ref — submitting without listing metadata (fine for updates; add file on main for first-time listing)."
+            fi
+          fi
+          cd "${ROOT}"
+          npx web-ext@8 "${wargs[@]}"
