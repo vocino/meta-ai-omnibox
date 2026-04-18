@@ -4,8 +4,8 @@ const PROMPT_PARAM = "prompt";
 
 /**
  * Normalize text entered after the omnibox keyword.
- * Registered keyword is `@Meta`; `@meta` / `@META` still work (case-insensitive).
- * Supports `@Meta query` and `@Meta: query` forms.
+ * Docs use `@meta:` / `@meta`; the registered omnibox keyword may differ in casing.
+ * Strips a leading `@meta` prefix case-insensitively, then an optional `:`.
  * @param {string} input
  * @returns {string}
  */

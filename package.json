@@ -1,7 +1,7 @@
 {
   "name": "meta-ai-omnibox",
-  "version": "0.1.3",
-  "description": "Unofficial extension: @Meta omnibox for meta.ai. Not affiliated with Meta.",
+  "version": "0.1.4",
+  "description": "Unofficial extension: @meta: omnibox for meta.ai. Not affiliated with Meta.",
   "main": "extension/background.js",
   "scripts": {
     "lint": "eslint . --cache",

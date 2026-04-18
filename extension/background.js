@@ -45,7 +45,7 @@
 
   if (api.omnibox?.setDefaultSuggestion) {
     api.omnibox.setDefaultSuggestion({
-      description: "@Meta %s",
+      description: "@meta %s",
     });
   }
 
