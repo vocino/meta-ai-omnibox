@@ -31,28 +31,30 @@ jobs:
   package:
     needs: verify
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build release directories
-        run: |
-          mkdir -p dist/chromium dist/firefox
-          cp -R extension/* dist/chromium/
-          cp -R extension/* dist/firefox/
-          cp extension/manifest.firefox.json dist/firefox/manifest.json
-          rm dist/chromium/manifest.firefox.json dist/chromium/manifest.chromium.json
-          rm dist/firefox/manifest.firefox.json dist/firefox/manifest.chromium.json
+      - name: Build release zips
+        run: bash scripts/pack-extension.sh
 
-      - name: Archive extension bundles
-        run: |
-          cd dist/chromium && zip -r ../meta-ai-omnibox-chromium.zip .
-          cd ../firefox && zip -r ../meta-ai-omnibox-firefox.zip .
-
-      - name: Upload release artifacts
+      - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
         with:
           name: extension-bundles
           path: |
             dist/meta-ai-omnibox-chromium.zip
             dist/meta-ai-omnibox-firefox.zip
+
+      - name: Create GitHub Release (tag pushes only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/meta-ai-omnibox-chromium.zip
+            dist/meta-ai-omnibox-firefox.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

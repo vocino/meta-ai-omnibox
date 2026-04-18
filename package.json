@@ -14,7 +14,8 @@
     "test:e2e:firefox": "playwright test --project=firefox",
     "test:e2e": "playwright test",
     "verify": "npm run lint && npm run typecheck && npm run test:all && npm run test:e2e",
-    "prepare:firefox": "node scripts/prepare-firefox.js"
+    "prepare:firefox": "node scripts/prepare-firefox.js",
+    "pack": "bash scripts/pack-extension.sh"
   },
   "repository": {
     "type": "git",

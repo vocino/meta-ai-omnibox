@@ -19,6 +19,28 @@ Type `@meta:` in your browser omnibox (or `@meta` followed by a space), or use t
 3. Meta.ai opens with `search terms` in the composer.
 4. Submit manually or automatically based on extension settings.
 
+## Browser support and store builds
+
+| Browser | Status | Download |
+| ------- | ------ | -------- |
+| <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" width="20" alt=""> **Chrome** | ✅ MV3 (Chromium package) | [Install][link-chrome] · [ZIP][link-releases] |
+| <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" width="20" alt=""> **Edge** | ✅ Same build as Chrome | [Install][link-edge] · [ZIP][link-releases] |
+| <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" width="20" alt=""> **Firefox** | ✅ MV3 (Firefox package) | [Install][link-firefox] · [ZIP][link-releases] |
+| <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" width="20" alt=""> **Opera** | ✅ Chromium | Via Chrome Store (when listed) |
+| <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/brave/brave_48x48.png" width="20" alt=""> **Brave** | ✅ Chromium | Via Chrome Store (when listed) |
+| <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/vivaldi/vivaldi_48x48.png" width="20" alt=""> **Vivaldi** | ✅ Chromium | Via Chrome Store (when listed) |
+
+### Release artifacts
+
+| File | Use |
+| ---- | --- |
+| `meta-ai-omnibox-chromium.zip` | Chrome Web Store, Edge Add-ons, and other Chromium installs |
+| `meta-ai-omnibox-firefox.zip` | [addons.mozilla.org](https://addons.mozilla.org/) (Firefox) |
+
+Build locally with `npm run pack` (after `npm run verify`), or download from **[GitHub Releases](https://github.com/vocino/meta-ai-omnibox/releases)** when you push a tag like `v0.1.5`. Maintainer checklist: [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md).
+
+> **Store links:** `[link-chrome]`, `[link-edge]`, and `[link-firefox]` should point at the live store listings once approved. Until then they use **GitHub Releases** (same as `[link-releases]`).
+
 ## Install (development)
 
 ### Chromium (Chrome, Edge, Brave)
@@ -57,12 +79,14 @@ The preference is stored in `storage.local` under `submitMode`.
 - E2E tests (Chromium): `npm run test:e2e:chromium`
 - E2E tests (Firefox): `npm run test:e2e:firefox`
 - Full verification: `npm run verify`
+- Package store zips: `npm run pack` → `dist/meta-ai-omnibox-chromium.zip` and `dist/meta-ai-omnibox-firefox.zip`
 - `test:all` enforces minimum coverage thresholds for `src/` (see `vitest.config.js`).
 
 ## CI and GitHub Automation
 - PR and push checks run lint, typecheck, unit, integration, and E2E.
 - Nightly regression runs browser E2E to detect Meta.ai DOM drift.
-- Release workflow packages browser-specific zip artifacts only after `verify` succeeds.
+- **Release** workflow (tags `v*`): runs `verify`, builds both zips via `scripts/pack-extension.sh`, uploads workflow artifacts, and **creates a GitHub Release** with the zip attachments.
+- `workflow_dispatch` on Release runs the same verify + pack steps without creating a GitHub Release (handy for testing the build).
 - Dependabot updates npm dependencies weekly.
 
 ## Manual Verification Checklist
@@ -77,3 +101,9 @@ The preference is stored in `storage.local` under `submitMode`.
 If something breaks, behaves oddly, or could work better, please **[open an issue on GitHub](https://github.com/vocino/meta-ai-omnibox/issues)**. Bug reports, feature ideas, and compatibility notes (browser version, OS) are all welcome.
 
 Author: [Vocino](https://threads.net/@vocino)
+
+<!-- Store listing URLs: point [link-chrome] / [link-edge] / [link-firefox] at CWS / Edge / AMO when live -->
+[link-chrome]: https://github.com/vocino/meta-ai-omnibox/releases/latest
+[link-edge]: https://github.com/vocino/meta-ai-omnibox/releases/latest
+[link-firefox]: https://github.com/vocino/meta-ai-omnibox/releases/latest
+[link-releases]: https://github.com/vocino/meta-ai-omnibox/releases/latest
