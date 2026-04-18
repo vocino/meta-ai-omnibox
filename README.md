@@ -58,6 +58,4 @@ The preference is stored in `storage.local` under `submitMode`.
 - Auto mode sends Enter automatically.
 - Prompt URL parameter is removed after injection.
 
-## Attribution
-Created by **Travis Vocino, Director of Product Design at Meta**.  
-Profile: [threads.net/@vocino](https://threads.net/@vocino)
+Author: [Vocino](https://threads.net/@vocino)
