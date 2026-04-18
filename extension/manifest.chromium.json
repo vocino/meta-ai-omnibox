@@ -6,11 +6,33 @@
   "version": "0.1.0",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://www.meta.ai/*", "https://meta.ai/*"],
+  "icons": {
+    "16": "icons/icon64.png",
+    "32": "icons/icon64.png",
+    "48": "icons/icon64.png",
+    "64": "icons/icon64.png",
+    "128": "icons/icon64.png"
+  },
   "omnibox": {
     "keyword": "@meta"
   },
+  "chrome_settings_overrides": {
+    "search_provider": {
+      "name": "Meta.ai",
+      "keyword": "@meta",
+      "search_url": "https://www.meta.ai/?extensionPrompt={searchTerms}",
+      "encoding": "UTF-8",
+      "favicon_url": "icons/icon64.png",
+      "is_default": false
+    }
+  },
   "action": {
-    "default_title": "Open Meta.ai"
+    "default_title": "Open Meta.ai",
+    "default_icon": {
+      "16": "icons/icon64.png",
+      "32": "icons/icon64.png",
+      "48": "icons/icon64.png"
+    }
   },
   "background": {
     "service_worker": "background.js"

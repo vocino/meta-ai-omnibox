@@ -4,6 +4,7 @@ Type `@meta` in your browser omnibox to launch Meta.ai with a pre-filled prompt.
 
 ## Features
 - Omnibox keyword: `@meta`
+- Registers **Meta.ai** as a search engine (`chrome_settings_overrides.search_provider`) so Firefox can treat it like engines from “Add search engine” (keyword `@meta`, opens `https://www.meta.ai/?extensionPrompt=…`).
 - Supports `@meta query` and `@meta: query`
 - User-selectable submit behavior:
   - Manual: fill prompt only
@@ -29,7 +30,11 @@ Type `@meta` in your browser omnibox to launch Meta.ai with a pre-filled prompt.
    This writes `dist/firefox-dev/` with `manifest.json` taken from `extension/manifest.firefox.json`.
 2. Open Firefox → `about:debugging#/runtime/this-firefox`.
 3. Click **Load Temporary Add-on…** and select `dist/firefox-dev/manifest.json`.
-4. Use the address bar: type **`@meta`**, then your query (e.g. **`@meta: hello`**) and press Enter.
+4. **Using the address bar:** Firefox does **not** use the same “search prefix” chip for WebExtension omnibox keywords as it does for built-in / OpenSearch engines. For the **native-style** keyword strip, use the registered engine **Meta.ai**:
+   - Open **Settings → Search** (`about:preferences#search`) and confirm **Meta.ai** appears (added by this extension).
+   - Set **Keyword** to `@meta` if it is not already, or pick **Meta.ai** from the search engine list when typing in the address bar.
+   - Type **`@meta`**, **Space**, then your query (same pattern as other Firefox search keywords), then Enter.  
+   The omnibox API path (`@meta` without using the registered engine) may show the add-on but will not restyle the bar like a saved search engine.
 
 Temporary add-ons are removed when Firefox closes; run `prepare:firefox` again after code changes and reload the add-on on the same page (**Reload** next to the extension).
 

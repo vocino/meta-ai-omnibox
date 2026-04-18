@@ -45,6 +45,12 @@
   const api = getApi();
   if (!api) return;
 
+  if (api.omnibox?.setDefaultSuggestion) {
+    api.omnibox.setDefaultSuggestion({
+      description: "Meta.ai: %s",
+    });
+  }
+
   if (api.omnibox?.onInputEntered) {
     api.omnibox.onInputEntered.addListener((query) => {
       handleOmniboxInput(query);
