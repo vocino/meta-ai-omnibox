@@ -32,14 +32,14 @@ Type `@meta:` in your browser omnibox (or `@meta` followed by a space), or use t
 
 ### Release artifacts
 
-Each release includes two versioned zips (same semver as `manifest.json`), for example `meta-ai-omnibox-chromium-v0.1.5.zip` and `meta-ai-omnibox-firefox-v0.1.5.zip`.
+Each release includes two versioned zips (same semver as `manifest.json`), for example `meta-ai-omnibox-chromium-v0.2.0.zip` and `meta-ai-omnibox-firefox-v0.2.0.zip`.
 
 | File pattern | Use |
 | ------------ | --- |
 | `meta-ai-omnibox-chromium-vX.Y.Z.zip` | Chrome Web Store, Edge Add-ons, and other Chromium installs |
 | `meta-ai-omnibox-firefox-vX.Y.Z.zip` | [Firefox Add-ons listing](https://addons.mozilla.org/en-US/firefox/addon/meta-ai-omnibox/) |
 
-**Automation:** merge to `main` with the same `version` in `package.json` and all extension manifests (`verify:versions` enforces this in CI). If `v{version}` does not exist yet, **Release** creates that tag; the **tag** workflow run builds both zips and publishes a **GitHub Release** (so we do not race two publishers on a fresh tag). If the tag **already existed** without a release, the next **`main`** push runs a **backfill** job that attaches **both** `meta-ai-omnibox-chromium-v*.zip` and `meta-ai-omnibox-firefox-v*.zip`. To fix a tag manually, use **Actions → Release → Run workflow** and set **publish_tag** to e.g. `v0.1.5`; leave it empty to verify and upload artifacts only (no Release).
+**Automation:** merge to `main` with the same `version` in `package.json` and all extension manifests (`verify:versions` enforces this in CI). If `v{version}` does not exist yet, **Release** creates that tag; the **tag** workflow run builds both zips and publishes a **GitHub Release** (so we do not race two publishers on a fresh tag). If the tag **already existed** without a release, the next **`main`** push runs a **backfill** job that attaches **both** `meta-ai-omnibox-chromium-v*.zip` and `meta-ai-omnibox-firefox-v*.zip`. To fix a tag manually, use **Actions → Release → Run workflow** and set **publish_tag** to e.g. `v0.2.0`; leave it empty to verify and upload artifacts only (no Release).
 
 Build locally with `npm run pack` (after `npm run verify`), or download from **[GitHub Releases](https://github.com/vocino/meta-ai-omnibox/releases)**. Maintainer checklist: [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md).
 
@@ -85,7 +85,7 @@ The preference is stored in `storage.local` under `submitMode`.
 - E2E tests (Firefox): `npm run test:e2e:firefox`
 - Full verification: `npm run verify`
 - Package store zips: `npm run pack` → `dist/meta-ai-omnibox-chromium-v{version}.zip` and `dist/meta-ai-omnibox-firefox-v{version}.zip` (version from `extension/manifest.json`)
-- `test:all` enforces minimum coverage thresholds for `src/` (see `vitest.config.js`).
+- `test:all` enforces minimum coverage thresholds for `extension/lib/` (see `vitest.config.js`).
 
 ## CI and GitHub Automation
 - PR and push checks run aligned-version guard, lint, typecheck, unit, integration, and E2E.

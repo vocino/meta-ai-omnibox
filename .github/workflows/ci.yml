@@ -26,6 +26,9 @@ jobs:
       - name: Verify aligned extension versions
         run: npm run verify:versions
 
+      - name: Verify extension publish tree
+        run: npm run verify:extension-files
+
       - name: Lint
         run: npm run lint:all
 

@@ -1,7 +1,10 @@
 (function backgroundMain() {
-  const META_BASE_URL = "https://www.meta.ai/";
-  /** Must match Meta web: www.meta.ai/?prompt=… */
-  const PROMPT_PARAM = "prompt";
+  if (typeof importScripts === "function" && !globalThis.__META_OMNIBOX__?.query) {
+    importScripts("lib/init.js", "lib/query.js");
+  }
+
+  const { query } = globalThis.__META_OMNIBOX__;
+  if (!query) return;
 
   function getApi() {
     if (typeof globalThis.browser !== "undefined") return globalThis.browser;
@@ -9,35 +12,42 @@
     return null;
   }
 
-  function normalizeOmniboxQuery(input) {
-    if (typeof input !== "string") return "";
-    let value = input.trim();
-    value = value.replace(/^@meta/i, "").trim();
-
-    if (value.startsWith(":")) {
-      value = value.slice(1).trim();
+  /**
+   * @param {string} rawQuery
+   * @returns {string}
+   */
+  function omniboxDescriptionForQuery(rawQuery) {
+    const normalized = query.normalizeOmniboxQuery(rawQuery);
+    if (!normalized) {
+      return "Open <match>Meta AI</match> — add a prompt after @meta";
     }
-
-    return value;
+    const safe = normalized.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `Open <match>meta.ai</match> with: <match>${safe}</match>`;
   }
 
-  function buildMetaUrl(query) {
-    const normalized = normalizeOmniboxQuery(query);
-    const url = new URL(META_BASE_URL);
-    if (normalized) url.searchParams.set(PROMPT_PARAM, normalized);
-    return url.toString();
-  }
-
-  async function handleOmniboxInput(rawQuery) {
+  /**
+   * @param {string} rawQuery
+   * @param {"currentTab" | "newForegroundTab" | "newBackgroundTab"} disposition
+   */
+  async function handleOmniboxInput(rawQuery, disposition) {
     const api = getApi();
     if (!api?.tabs) return;
-    await api.tabs.update({ url: buildMetaUrl(rawQuery) });
+    const url = query.buildMetaUrl({ query: rawQuery });
+    if (disposition === "newForegroundTab") {
+      await api.tabs.create({ url, active: true });
+      return;
+    }
+    if (disposition === "newBackgroundTab") {
+      await api.tabs.create({ url, active: false });
+      return;
+    }
+    await api.tabs.update({ url });
   }
 
   async function handleActionClick() {
     const api = getApi();
     if (!api?.tabs) return;
-    await api.tabs.create({ url: META_BASE_URL });
+    await api.tabs.create({ url: query.META_BASE_URL });
   }
 
   const api = getApi();
@@ -45,13 +55,24 @@
 
   if (api.omnibox?.setDefaultSuggestion) {
     api.omnibox.setDefaultSuggestion({
-      description: "@meta %s",
+      description: "Open <match>Meta AI</match> — type a prompt or leave empty",
+    });
+  }
+
+  if (api.omnibox?.onInputChanged) {
+    api.omnibox.onInputChanged.addListener((text, suggest) => {
+      suggest([
+        {
+          content: text,
+          description: omniboxDescriptionForQuery(text),
+        },
+      ]);
     });
   }
 
   if (api.omnibox?.onInputEntered) {
-    api.omnibox.onInputEntered.addListener((query) => {
-      handleOmniboxInput(query);
+    api.omnibox.onInputEntered.addListener((q, disposition) => {
+      handleOmniboxInput(q, disposition);
     });
   }
 

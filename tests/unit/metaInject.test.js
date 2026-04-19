@@ -1,12 +1,15 @@
 // @vitest-environment jsdom
 
+require("../../extension/lib/init.js");
+require("../../extension/lib/settings.js");
 const {
   findComposer,
   fillComposer,
   submitComposer,
   waitForComposer,
+  tryClickSendButton,
   COMPOSER_SELECTORS,
-} = require("../../src/metaInject");
+} = require("../../extension/lib/meta-core.js");
 
 function mockVisible(el, w = 100, h = 20) {
   el.getBoundingClientRect = () => /** @type {any} */ ({ width: w, height: h });
@@ -57,18 +60,57 @@ describe("fillComposer", () => {
   });
 });
 
+describe("tryClickSendButton", () => {
+  test("clicks visible control with send in aria-label", () => {
+    document.body.innerHTML = `
+      <div><textarea id="ta"></textarea><button type="button" aria-label="Send message">go</button></div>`;
+    const ta = /** @type {HTMLTextAreaElement} */ (document.getElementById("ta"));
+    mockVisible(ta);
+    const btn = /** @type {HTMLButtonElement} */ (document.querySelector("button"));
+    mockVisible(btn);
+    let clicks = 0;
+    btn.addEventListener("click", () => {
+      clicks += 1;
+    });
+    expect(tryClickSendButton(ta)).toBe(true);
+    expect(clicks).toBe(1);
+  });
+
+  test("returns false when no matching control", () => {
+    document.body.innerHTML = "<textarea id=\"solo\"></textarea>";
+    const ta = /** @type {HTMLTextAreaElement} */ (document.getElementById("solo"));
+    mockVisible(ta);
+    expect(tryClickSendButton(ta)).toBe(false);
+  });
+});
+
 describe("submitComposer", () => {
-  test("dispatches Enter keydown and keyup", () => {
+  test("prefers send button over keyboard when present", () => {
+    document.body.innerHTML = `
+      <div><textarea id="kbd"></textarea><button type="button" aria-label="Send">➤</button></div>`;
+    const el = /** @type {HTMLTextAreaElement} */ (document.getElementById("kbd"));
+    mockVisible(el);
+    mockVisible(/** @type {HTMLElement} */ (document.querySelector("button")));
+    const keys = [];
+    el.addEventListener("keydown", (e) => keys.push(e.type));
+    el.addEventListener("keypress", (e) => keys.push(e.type));
+    el.addEventListener("keyup", (e) => keys.push(e.type));
+    submitComposer(el);
+    expect(keys).toEqual([]);
+  });
+
+  test("dispatches Enter keydown, keypress, and keyup", () => {
     document.body.innerHTML = "<textarea id='c'></textarea>";
     const el = /** @type {HTMLTextAreaElement} */ (document.getElementById("c"));
     mockVisible(el);
 
     const keys = [];
     el.addEventListener("keydown", (e) => keys.push(`down:${e.key}`));
+    el.addEventListener("keypress", (e) => keys.push(`press:${e.key}`));
     el.addEventListener("keyup", (e) => keys.push(`up:${e.key}`));
 
     submitComposer(el);
-    expect(keys).toEqual(["down:Enter", "up:Enter"]);
+    expect(keys).toEqual(["down:Enter", "press:Enter", "up:Enter"]);
   });
 });
 
@@ -112,5 +154,22 @@ describe("COMPOSER_SELECTORS contract", () => {
   test("lists at least textarea and contenteditable patterns", () => {
     expect(COMPOSER_SELECTORS.some((s) => s.includes("textarea"))).toBe(true);
     expect(COMPOSER_SELECTORS.some((s) => s.includes("contenteditable"))).toBe(true);
+  });
+});
+
+describe("shouldAutoSubmit fallback", () => {
+  test("without settings module uses string equality for auto", async () => {
+    vi.resetModules();
+    delete globalThis.__META_OMNIBOX__;
+    require("../../extension/lib/init.js");
+    require("../../extension/lib/meta-core.js");
+    const { shouldAutoSubmit: shouldAuto } = require("../../extension/lib/meta-core.js");
+    expect(shouldAuto("auto")).toBe(true);
+    expect(shouldAuto("manual")).toBe(false);
+    vi.resetModules();
+    delete globalThis.__META_OMNIBOX__;
+    require("../../extension/lib/init.js");
+    require("../../extension/lib/settings.js");
+    require("../../extension/lib/meta-core.js");
   });
 });

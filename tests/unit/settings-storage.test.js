@@ -5,7 +5,7 @@ const {
   getSubmitMode,
   setSubmitMode,
   createStorageAdapter,
-} = require("../../src/settings");
+} = require("../../extension/lib/settings.js");
 
 describe("getSubmitMode / setSubmitMode with extension API", () => {
   const originalBrowser = globalThis.browser;
@@ -51,7 +51,7 @@ describe("getSubmitMode / setSubmitMode with extension API", () => {
       },
     };
 
-    await setSubmitMode(SUBMIT_MODE_AUTO);
+    await setSubmitMode("auto");
     expect(stored[SUBMIT_MODE_KEY]).toBe(SUBMIT_MODE_AUTO);
 
     await setSubmitMode(/** @type {"manual" | "auto"} */ ("bogus"));

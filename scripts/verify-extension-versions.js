@@ -9,7 +9,6 @@ const root = path.join(__dirname, "..");
 const files = [
   "package.json",
   "extension/manifest.json",
-  "extension/manifest.chromium.json",
   "extension/manifest.firefox.json",
 ];
 

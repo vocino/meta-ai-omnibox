@@ -1,15 +1,15 @@
 (function metaInjectMain() {
-  /** Same query key as Meta’s own deep links (not a custom param). */
-  const PROMPT_PARAM = "prompt";
-  const SUBMIT_MODE_KEY = "submitMode";
-  const SUBMIT_MODE_AUTO = "auto";
-  const SUBMIT_MODE_MANUAL = "manual";
-  const FALLBACK_TIMEOUT_MS = 15_000;
-  const COMPOSER_SELECTORS = [
-    "textarea",
-    "div[contenteditable='true'][role='textbox']",
-    "[contenteditable='true']",
-  ];
+  const { query, settings, metaCore } = globalThis.__META_OMNIBOX__;
+  if (!query || !settings || !metaCore) return;
+
+  const { PROMPT_PARAM } = query;
+  const { SUBMIT_MODE_KEY, SUBMIT_MODE_AUTO, SUBMIT_MODE_MANUAL, normalizeSubmitMode } = settings;
+  const {
+    findComposer,
+    fillComposer,
+    submitComposer,
+    waitForComposer,
+  } = metaCore;
 
   function getApi() {
     if (typeof globalThis.browser !== "undefined") return globalThis.browser;
@@ -17,13 +17,8 @@
     return null;
   }
 
-  function normalizeSubmitMode(value) {
-    return value === SUBMIT_MODE_AUTO ? SUBMIT_MODE_AUTO : SUBMIT_MODE_MANUAL;
-  }
-
   function getPromptFromUrl() {
-    const currentUrl = new URL(window.location.href);
-    return currentUrl.searchParams.get(PROMPT_PARAM) || "";
+    return query.readPromptFromUrl(window.location.href);
   }
 
   function clearPromptFromUrl() {
@@ -31,100 +26,6 @@
     if (!currentUrl.searchParams.has(PROMPT_PARAM)) return;
     currentUrl.searchParams.delete(PROMPT_PARAM);
     window.history.replaceState({}, "", currentUrl.toString());
-  }
-
-  function isVisible(element) {
-    if (!(element instanceof HTMLElement)) return false;
-    const style = window.getComputedStyle(element);
-    if (style.visibility === "hidden" || style.display === "none") return false;
-    const rect = element.getBoundingClientRect();
-    return rect.width > 0 || rect.height > 0;
-  }
-
-  function findComposer() {
-    for (const selector of COMPOSER_SELECTORS) {
-      const candidates = Array.from(document.querySelectorAll(selector));
-      const composer = candidates.find((candidate) => isVisible(candidate));
-      if (composer instanceof HTMLElement) return composer;
-    }
-    return null;
-  }
-
-  function waitForComposer() {
-    return new Promise((resolve) => {
-      const immediate = findComposer();
-      if (immediate) {
-        resolve(immediate);
-        return;
-      }
-
-      const observer = new MutationObserver(() => {
-        const composer = findComposer();
-        if (!composer) return;
-        observer.disconnect();
-        clearTimeout(timeoutHandle);
-        resolve(composer);
-      });
-
-      observer.observe(document.documentElement, { childList: true, subtree: true });
-
-      const timeoutHandle = setTimeout(() => {
-        observer.disconnect();
-        resolve(findComposer());
-      }, FALLBACK_TIMEOUT_MS);
-    });
-  }
-
-  function fillComposer(composer, prompt) {
-    composer.focus();
-    if (composer instanceof HTMLTextAreaElement || composer instanceof HTMLInputElement) {
-      composer.value = prompt;
-    } else {
-      composer.textContent = prompt;
-    }
-    composer.dispatchEvent(new Event("input", { bubbles: true }));
-    composer.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-
-  /**
-   * Meta’s UI uses a send button; synthetic Enter is often ignored by React.
-   * Prefer a visible control whose aria-label suggests “send”.
-   * @param {HTMLElement} composer
-   * @returns {boolean} true if a click was dispatched
-   */
-  function tryClickSendButton(composer) {
-    let node = composer;
-    for (let depth = 0; depth < 14 && node; depth += 1, node = node.parentElement) {
-      const buttons = node.querySelectorAll("button, [role='button']");
-      for (const btn of buttons) {
-        if (!(btn instanceof HTMLElement) || !isVisible(btn)) continue;
-        if (btn.hasAttribute("disabled")) continue;
-        const aria = (btn.getAttribute("aria-label") || "").toLowerCase();
-        if (aria.includes("send")) {
-          btn.click();
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  function submitComposer(composer) {
-    composer.focus();
-    if (tryClickSendButton(composer)) {
-      return;
-    }
-    const keyboardEventInit = {
-      key: "Enter",
-      code: "Enter",
-      which: 13,
-      keyCode: 13,
-      bubbles: true,
-      cancelable: true,
-    };
-    composer.dispatchEvent(new KeyboardEvent("keydown", keyboardEventInit));
-    composer.dispatchEvent(new KeyboardEvent("keypress", keyboardEventInit));
-    composer.dispatchEvent(new KeyboardEvent("keyup", keyboardEventInit));
   }
 
   async function readSubmitMode() {
@@ -164,8 +65,6 @@
       fillComposer(composer, prompt);
     }
     if (mode === SUBMIT_MODE_AUTO) {
-      // Meta often pre-fills from `?prompt=` before we run; auto-submit must still fire in that case.
-      // Defer one tick so frameworks can commit input state before send.
       const el = composer;
       queueMicrotask(() => submitComposer(el));
     }

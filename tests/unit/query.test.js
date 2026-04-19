@@ -4,7 +4,7 @@ const {
   buildMetaUrl,
   readPromptFromUrl,
   removePromptParam,
-} = require("../../src/query");
+} = require("../../extension/lib/query.js");
 
 describe("query normalization", () => {
   test("handles @Meta: query", () => {

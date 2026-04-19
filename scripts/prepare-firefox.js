@@ -17,7 +17,7 @@ const firefoxManifest = path.join(src, "manifest.firefox.json");
 const destManifest = path.join(dest, "manifest.json");
 fs.copyFileSync(firefoxManifest, destManifest);
 
-for (const name of ["manifest.chromium.json", "manifest.firefox.json"]) {
+for (const name of ["manifest.firefox.json"]) {
   try {
     fs.unlinkSync(path.join(dest, name));
   } catch {

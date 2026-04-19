@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
 
+require("../../extension/lib/init.js");
+require("../../extension/lib/settings.js");
 const {
   findComposer,
   fillComposer,
   shouldAutoSubmit,
-} = require("../../src/metaInject");
+} = require("../../extension/lib/meta-core.js");
 
 describe("meta composer integration", () => {
   test("finds textarea composer", () => {

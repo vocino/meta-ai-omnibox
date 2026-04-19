@@ -1,63 +1,38 @@
 (function optionsMain() {
-  const SUBMIT_MODE_KEY = "submitMode";
-  const SUBMIT_MODE_AUTO = "auto";
-  const SUBMIT_MODE_MANUAL = "manual";
   const statusElement = document.getElementById("status");
+  let statusClearTimer = 0;
 
-  function getApi() {
-    if (typeof globalThis.browser !== "undefined") return globalThis.browser;
-    if (typeof globalThis.chrome !== "undefined") return globalThis.chrome;
-    return null;
+  const settings = globalThis.__META_OMNIBOX__?.settings;
+  if (!settings) {
+    if (statusElement) statusElement.textContent = "Extension API unavailable.";
+    return;
   }
 
-  function normalizeSubmitMode(value) {
-    return value === SUBMIT_MODE_AUTO ? SUBMIT_MODE_AUTO : SUBMIT_MODE_MANUAL;
-  }
+  const { normalizeSubmitMode, getSubmitMode, setSubmitMode, getExtensionApi } = settings;
 
   function getSelectedRadio() {
     return document.querySelector("input[name='submitMode']:checked");
   }
 
-  async function readMode() {
-    const api = getApi();
-    const storage = api?.storage?.local;
-    if (!storage) return SUBMIT_MODE_MANUAL;
-
-    if (storage.get.length <= 1) {
-      const result = await storage.get(SUBMIT_MODE_KEY);
-      return normalizeSubmitMode(result?.[SUBMIT_MODE_KEY]);
+  function setStatus(text, opts = {}) {
+    if (!statusElement) return;
+    statusElement.textContent = text;
+    statusElement.classList.toggle("status-error", Boolean(opts.error));
+    if (statusClearTimer) {
+      clearTimeout(statusClearTimer);
+      statusClearTimer = 0;
     }
-
-    return new Promise((resolve) => {
-      storage.get(SUBMIT_MODE_KEY, (result) => {
-        resolve(normalizeSubmitMode(result?.[SUBMIT_MODE_KEY]));
-      });
-    });
-  }
-
-  async function writeMode(mode) {
-    const api = getApi();
-    const storage = api?.storage?.local;
-    if (!storage) return;
-
-    const normalized = normalizeSubmitMode(mode);
-
-    if (storage.set.length <= 1) {
-      await storage.set({ [SUBMIT_MODE_KEY]: normalized });
-      return;
+    if (text && !opts.error && !opts.noAutoClear) {
+      statusClearTimer = window.setTimeout(() => {
+        statusElement.textContent = "";
+        statusElement.classList.remove("status-error");
+        statusClearTimer = 0;
+      }, 1500);
     }
-
-    await new Promise((resolve) => {
-      storage.set({ [SUBMIT_MODE_KEY]: normalized }, resolve);
-    });
-  }
-
-  function setStatus(text) {
-    if (statusElement) statusElement.textContent = text;
   }
 
   async function restoreFromStorage() {
-    const mode = await readMode();
+    const mode = await getSubmitMode();
     const radio = document.querySelector(`input[name='submitMode'][value='${mode}']`);
     if (radio instanceof HTMLInputElement) {
       radio.checked = true;
@@ -67,8 +42,12 @@
   async function handleModeChange() {
     const selected = getSelectedRadio();
     if (!(selected instanceof HTMLInputElement)) return;
-    await writeMode(selected.value);
-    setStatus("Saved.");
+    try {
+      await setSubmitMode(/** @type {"manual" | "auto"} */ (selected.value));
+      setStatus("Saved.");
+    } catch {
+      setStatus("Couldn't save — please try again.", { error: true, noAutoClear: true });
+    }
   }
 
   const radios = document.querySelectorAll("input[name='submitMode']");
@@ -76,7 +55,19 @@
     radio.addEventListener("change", handleModeChange);
   }
 
+  const api = getExtensionApi();
+  if (api?.storage?.onChanged) {
+    api.storage.onChanged.addListener((changes, areaName) => {
+      if (areaName !== "local" || !changes.submitMode) return;
+      const next = normalizeSubmitMode(changes.submitMode.newValue);
+      const radio = document.querySelector(`input[name='submitMode'][value='${next}']`);
+      if (radio instanceof HTMLInputElement) {
+        radio.checked = true;
+      }
+    });
+  }
+
   restoreFromStorage().catch(() => {
-    setStatus("Could not read current setting.");
+    setStatus("Could not read current setting.", { error: true, noAutoClear: true });
   });
 })();

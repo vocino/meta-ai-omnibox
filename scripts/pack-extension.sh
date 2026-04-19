@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Build store-ready zips (same layout as CI release job).
-# Output names include the manifest version, e.g. meta-ai-omnibox-chromium-v0.1.5.zip
+# Output names include the manifest version, e.g. meta-ai-omnibox-chromium-v0.2.0.zip
 # Override with META_AI_OMNIBOX_VERSION=1.2.3 if needed.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+node "$ROOT/scripts/verify-extension-files.js"
 OUT="$ROOT/dist"
 MANIFEST="$ROOT/extension/manifest.json"
 VERSION="${META_AI_OMNIBOX_VERSION:-$(python3 -c "import json; print(json.load(open('$MANIFEST'))['version'])")}"
@@ -36,8 +37,8 @@ mkdir -p "$OUT/chromium" "$OUT/firefox"
 cp -R "$ROOT/extension"/* "$OUT/chromium/"
 cp -R "$ROOT/extension"/* "$OUT/firefox/"
 cp "$ROOT/extension/manifest.firefox.json" "$OUT/firefox/manifest.json"
-rm -f "$OUT/chromium/manifest.firefox.json" "$OUT/chromium/manifest.chromium.json"
-rm -f "$OUT/firefox/manifest.firefox.json" "$OUT/firefox/manifest.chromium.json"
+rm -f "$OUT/chromium/manifest.firefox.json"
+rm -f "$OUT/firefox/manifest.firefox.json"
 zip_tree "$OUT/chromium" "$OUT/$CHROMIUM_ZIP"
 zip_tree "$OUT/firefox" "$OUT/$FIREFOX_ZIP"
 echo "Wrote $OUT/$CHROMIUM_ZIP"

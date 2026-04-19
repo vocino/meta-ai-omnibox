@@ -4,7 +4,7 @@ This extension is **unofficial** and not affiliated with Meta. Use clear languag
 
 ## Builds
 
-Artifacts are named with the semver from `extension/manifest.json`, e.g. `v0.1.5` → `meta-ai-omnibox-chromium-v0.1.5.zip`.
+Artifacts are named with the semver from `extension/manifest.json`, e.g. `v0.2.0` → `meta-ai-omnibox-chromium-v0.2.0.zip`.
 
 | Artifact pattern | Browsers | Manifest |
 | ---------------- | -------- | -------- |
@@ -23,14 +23,14 @@ Or download the same files from **[GitHub Releases](https://github.com/vocino/me
 
 ## Release process (maintainers)
 
-1. Bump `version` in `extension/manifest.json`, `extension/manifest.chromium.json`, `extension/manifest.firefox.json`, and `package.json`, then merge to **`main`**.
+1. Bump `version` in `extension/manifest.json`, `extension/manifest.firefox.json`, and `package.json`, then merge to **`main`**.
 2. **Automatic:** the **Release** workflow creates the git tag **`v{version}`** on that commit if it does not already exist. That tag push runs tests, builds both zips, and opens a **GitHub Release** with `generate_release_notes` plus the two zip attachments.
 3. **Manual:** you can still `git tag vX.Y.Z && git push origin vX.Y.Z`, or use **Actions → Release → Run workflow** with **publish_tag** set to `vX.Y.Z` to build that ref and create/update the GitHub Release (both zips). Leave **publish_tag** empty to verify and upload workflow artifacts only.
 4. Upload each zip to the appropriate store (below).
 
 The tag-sync job does not wait for CI to finish; keep `main` green before bumping the version, or fix forward and bump again so a new tag is created.
 
-**Consistency:** `npm run verify` starts with `verify:versions`, which requires the same semver in `package.json`, `extension/manifest.json`, `manifest.chromium.json`, and `manifest.firefox.json`. **Release** repacks are implemented in a single reusable workflow so Chromium/Firefox zips and the GitHub Release step stay in sync.
+**Consistency:** `npm run verify` starts with `verify:versions`, which requires the same semver in `package.json`, `extension/manifest.json`, and `extension/manifest.firefox.json`. **Release** repacks are implemented in a single reusable workflow so Chromium/Firefox zips and the GitHub Release step stay in sync.
 
 ## Chrome Web Store
 

@@ -3,15 +3,15 @@
   "name": "Meta (Unofficial)",
   "short_name": "Meta",
   "description": "Unofficial extension — not affiliated with Meta. Use @meta: in the address bar or the registered search engine to open meta.ai with your prompt.",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://www.meta.ai/*", "https://meta.ai/*"],
   "icons": {
-    "16": "icons/icon64.png",
-    "32": "icons/icon64.png",
-    "48": "icons/icon64.png",
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
     "64": "icons/icon64.png",
-    "128": "icons/icon64.png"
+    "128": "icons/icon128.png"
   },
   "omnibox": {
     "keyword": "@Meta"
@@ -22,25 +22,31 @@
       "keyword": "@Meta",
       "search_url": "https://www.meta.ai/?prompt={searchTerms}",
       "encoding": "UTF-8",
-      "favicon_url": "icons/icon64.png",
+      "favicon_url": "icons/icon32.png",
       "is_default": false
     }
   },
   "action": {
     "default_title": "Meta (Unofficial) — open meta.ai",
     "default_icon": {
-      "16": "icons/icon64.png",
-      "32": "icons/icon64.png",
-      "48": "icons/icon64.png"
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png"
     }
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["lib/init.js", "lib/query.js", "background.js"]
   },
   "content_scripts": [
     {
       "matches": ["https://www.meta.ai/*", "https://meta.ai/*"],
-      "js": ["content/meta-inject.js"],
+      "js": [
+        "lib/init.js",
+        "lib/query.js",
+        "lib/settings.js",
+        "lib/meta-core.js",
+        "content/meta-inject.js"
+      ],
       "run_at": "document_idle"
     }
   ],

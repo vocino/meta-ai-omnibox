@@ -1,8 +1,7 @@
 {
   "name": "meta-ai-omnibox",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Unofficial extension: @meta: omnibox for meta.ai. Not affiliated with Meta.",
-  "main": "extension/background.js",
   "scripts": {
     "lint": "eslint . --cache",
     "lint:all": "eslint .",
@@ -14,7 +13,8 @@
     "test:e2e:firefox": "playwright test --project=firefox",
     "test:e2e": "playwright test",
     "verify:versions": "node scripts/verify-extension-versions.js",
-    "verify": "npm run verify:versions && npm run lint && npm run typecheck && npm run test:all && npm run test:e2e",
+    "verify:extension-files": "node scripts/verify-extension-files.js",
+    "verify": "npm run verify:versions && npm run verify:extension-files && npm run lint && npm run typecheck && npm run test:all && npm run test:e2e",
     "prepare:firefox": "node scripts/prepare-firefox.js",
     "pack": "bash scripts/pack-extension.sh"
   },

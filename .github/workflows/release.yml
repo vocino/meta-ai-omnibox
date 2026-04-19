@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       publish_tag:
-        description: "Existing tag to publish (e.g. v0.1.5). Builds that ref and creates/updates the GitHub Release with both zips. Leave empty to only verify + pack on main."
+        description: "Existing tag to publish (e.g. v0.2.0). Builds that ref and creates/updates the GitHub Release with both zips. Leave empty to only verify + pack on main."
         required: false
         type: string
         default: ""

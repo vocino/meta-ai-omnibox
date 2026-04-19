@@ -10,5 +10,5 @@
     "lib": ["ES2022", "DOM"],
     "types": ["node", "vitest/globals"]
   },
-  "include": ["src/**/*.js", "extension/**/*.js", "tests/**/*.js", "types/**/*.d.ts"]
+  "include": ["extension/**/*.js", "tests/**/*.js", "types/**/*.d.ts"]
 }

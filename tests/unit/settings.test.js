@@ -4,7 +4,7 @@ const {
   isValidSubmitMode,
   normalizeSubmitMode,
   createStorageAdapter,
-} = require("../../src/settings");
+} = require("../../extension/lib/settings.js");
 
 describe("submit mode validation", () => {
   test("accepts valid modes", () => {

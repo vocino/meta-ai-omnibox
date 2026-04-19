@@ -8,6 +8,7 @@ module.exports = defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       reportsDirectory: "coverage",
+      include: ["extension/lib/**/*.js"],
       thresholds: {
         lines: 90,
         statements: 90,

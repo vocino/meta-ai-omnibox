@@ -26,6 +26,14 @@ export default [
     },
   },
   {
+    files: ["extension/background.js"],
+    languageOptions: {
+      globals: {
+        importScripts: "readonly",
+      },
+    },
+  },
+  {
     ignores: [
       "dist/**",
       "node_modules/**",

@@ -2,7 +2,25 @@ const path = require("node:path");
 const { test, expect } = require("@playwright/test");
 
 const fixturePath = path.resolve(__dirname, "../fixtures/meta-mock.html");
-const contentScriptPath = path.resolve(__dirname, "../../extension/content/meta-inject.js");
+const extensionRoot = path.resolve(__dirname, "../../extension");
+const contentScriptPath = path.join(extensionRoot, "content/meta-inject.js");
+
+const libScripts = [
+  "lib/init.js",
+  "lib/query.js",
+  "lib/settings.js",
+  "lib/meta-core.js",
+];
+
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+async function loadContentScriptChain(page) {
+  for (const rel of libScripts) {
+    await page.addScriptTag({ path: path.join(extensionRoot, rel) });
+  }
+  await page.addScriptTag({ path: contentScriptPath });
+}
 
 function fixtureUrl(prompt) {
   const url = new URL(`file://${fixturePath}`);
@@ -15,7 +33,7 @@ test("manual mode fills prompt without submitting", async ({ page }) => {
   await page.evaluate(() => {
     window.__META_OMNIBOX_TEST_CONFIG__ = { submitMode: "manual" };
   });
-  await page.addScriptTag({ path: contentScriptPath });
+  await loadContentScriptChain(page);
 
   await expect(page.locator("#composer")).toHaveValue("manual mode prompt");
   await expect(page.locator("#submitted")).toHaveText("false");
@@ -27,7 +45,7 @@ test("auto mode fills and submits prompt", async ({ page }) => {
   await page.evaluate(() => {
     window.__META_OMNIBOX_TEST_CONFIG__ = { submitMode: "auto" };
   });
-  await page.addScriptTag({ path: contentScriptPath });
+  await loadContentScriptChain(page);
 
   await expect(page.locator("#composer")).toHaveValue("auto mode prompt");
   await expect(page.locator("#submitted")).toHaveText("true");
@@ -46,7 +64,7 @@ test("auto mode still submits when composer was already filled (Meta pre-fill fr
   await page.evaluate(() => {
     window.__META_OMNIBOX_TEST_CONFIG__ = { submitMode: "auto" };
   });
-  await page.addScriptTag({ path: contentScriptPath });
+  await loadContentScriptChain(page);
 
   await expect(page.locator("#composer")).toHaveValue(prompt);
   await expect(page.locator("#submitted")).toHaveText("true");
