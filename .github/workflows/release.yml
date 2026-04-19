@@ -31,11 +31,11 @@ jobs:
       tag_created: ${{ steps.sync.outputs.tag_created }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Sync git tag from manifest version
         id: sync
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require("fs");
@@ -81,11 +81,11 @@ jobs:
       tag_name: ${{ steps.gate.outputs.tag_name }}
     steps:
       - name: Checkout main (read manifest)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Decide if a GitHub Release is missing
         id: gate
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require("fs");
