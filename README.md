@@ -37,13 +37,13 @@ Each release includes two versioned zips (same semver as `manifest.json`), for e
 | File pattern | Use |
 | ------------ | --- |
 | `meta-ai-omnibox-chromium-vX.Y.Z.zip` | Chrome Web Store, Edge Add-ons, and other Chromium installs |
-| `meta-ai-omnibox-firefox-vX.Y.Z.zip` | [addons.mozilla.org](https://addons.mozilla.org/) (Firefox) |
+| `meta-ai-omnibox-firefox-vX.Y.Z.zip` | [Firefox Add-ons listing](https://addons.mozilla.org/en-US/firefox/addon/meta-ai-omnibox/) |
 
 **Automation:** merge to `main` with the same `version` in `package.json` and all extension manifests (`verify:versions` enforces this in CI). If `v{version}` does not exist yet, **Release** creates that tag; the **tag** workflow run builds both zips and publishes a **GitHub Release** (so we do not race two publishers on a fresh tag). If the tag **already existed** without a release, the next **`main`** push runs a **backfill** job that attaches **both** `meta-ai-omnibox-chromium-v*.zip` and `meta-ai-omnibox-firefox-v*.zip`. To fix a tag manually, use **Actions → Release → Run workflow** and set **publish_tag** to e.g. `v0.1.5`; leave it empty to verify and upload artifacts only (no Release).
 
 Build locally with `npm run pack` (after `npm run verify`), or download from **[GitHub Releases](https://github.com/vocino/meta-ai-omnibox/releases)**. Maintainer checklist: [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md).
 
-> **Store links:** `[link-chrome]`, `[link-edge]`, and `[link-firefox]` should point at the live store listings once approved. Until then they use **GitHub Releases** (same as `[link-releases]`).
+> **Store links:** **`[link-firefox]`** is the live Firefox Add-ons listing. **`[link-chrome]`** and **`[link-edge]`** still use **GitHub Releases** (same as **`[link-releases]`**) until the Chrome Web Store and Edge Add-ons listings are published.
 
 ## Install (development)
 
@@ -108,8 +108,8 @@ If something breaks, behaves oddly, or could work better, please **[open an issu
 
 Author: [Vocino](https://threads.net/@vocino)
 
-<!-- Store listing URLs: point [link-chrome] / [link-edge] / [link-firefox] at CWS / Edge / AMO when live -->
+<!-- Store listing URLs: [link-firefox] → AMO; point [link-chrome] / [link-edge] at CWS / Edge when live -->
 [link-chrome]: https://github.com/vocino/meta-ai-omnibox/releases/latest
 [link-edge]: https://github.com/vocino/meta-ai-omnibox/releases/latest
-[link-firefox]: https://github.com/vocino/meta-ai-omnibox/releases/latest
+[link-firefox]: https://addons.mozilla.org/en-US/firefox/addon/meta-ai-omnibox/
 [link-releases]: https://github.com/vocino/meta-ai-omnibox/releases/latest

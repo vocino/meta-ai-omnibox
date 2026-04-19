@@ -19,6 +19,8 @@ bash scripts/pack-extension.sh
 
 Or download the same files from **[GitHub Releases](https://github.com/vocino/meta-ai-omnibox/releases)**.
 
+**Firefox (end users):** install from **[addons.mozilla.org — Meta AI Omnibox](https://addons.mozilla.org/en-US/firefox/addon/meta-ai-omnibox/)**.
+
 ## Release process (maintainers)
 
 1. Bump `version` in `extension/manifest.json`, `extension/manifest.chromium.json`, `extension/manifest.firefox.json`, and `package.json`, then merge to **`main`**.
@@ -45,6 +47,8 @@ The tag-sync job does not wait for CI to finish; keep `main` green before bumpin
 3. Use the same disclaimer and privacy copy as Chrome.
 
 ## Firefox (AMO)
+
+**Public listing:** [addons.mozilla.org/en-US/firefox/addon/meta-ai-omnibox/](https://addons.mozilla.org/en-US/firefox/addon/meta-ai-omnibox/)
 
 ### Manual upload
 
