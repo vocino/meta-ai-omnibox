@@ -144,10 +144,16 @@ jobs:
       create_github_release: true
       release_tag_name: ${{ needs.sync-release-gate.outputs.tag_name }}
       submit_to_amo: ${{ vars.AMO_SUBMIT == 'true' }}
+      submit_to_cws: ${{ vars.CWS_SUBMIT == 'true' }}
+      cws_publish_target: ${{ vars.CWS_PUBLISH_TARGET || 'default' }}
     secrets:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
       AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
       MOZ_AMO_JWT_SECRET: ${{ secrets.MOZ_AMO_JWT_SECRET }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
 
   tag-release:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
@@ -157,10 +163,16 @@ jobs:
       create_github_release: true
       release_tag_name: ${{ github.ref_name }}
       submit_to_amo: ${{ vars.AMO_SUBMIT == 'true' }}
+      submit_to_cws: ${{ vars.CWS_SUBMIT == 'true' }}
+      cws_publish_target: ${{ vars.CWS_PUBLISH_TARGET || 'default' }}
     secrets:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
       AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
       MOZ_AMO_JWT_SECRET: ${{ secrets.MOZ_AMO_JWT_SECRET }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
 
   dispatch-release:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_tag != ''
@@ -170,10 +182,16 @@ jobs:
       create_github_release: true
       release_tag_name: ${{ github.event.inputs.publish_tag }}
       submit_to_amo: ${{ vars.AMO_SUBMIT == 'true' }}
+      submit_to_cws: ${{ vars.CWS_SUBMIT == 'true' }}
+      cws_publish_target: ${{ vars.CWS_PUBLISH_TARGET || 'default' }}
     secrets:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
       AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
       MOZ_AMO_JWT_SECRET: ${{ secrets.MOZ_AMO_JWT_SECRET }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
 
   smoke-pack:
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.publish_tag == ''
@@ -183,7 +201,13 @@ jobs:
       create_github_release: false
       release_tag_name: ""
       submit_to_amo: false
+      submit_to_cws: false
+      cws_publish_target: "default"
     secrets:
       AMO_API_KEY: ${{ secrets.AMO_API_KEY }}
       AMO_API_SECRET: ${{ secrets.AMO_API_SECRET }}
       MOZ_AMO_JWT_SECRET: ${{ secrets.MOZ_AMO_JWT_SECRET }}
+      CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+      CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+      CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+      CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}

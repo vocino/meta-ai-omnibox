@@ -1,6 +1,6 @@
 {
   "name": "meta-ai-omnibox",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Unofficial extension: @meta: omnibox for meta.ai. Not affiliated with Meta.",
   "scripts": {
     "lint": "eslint . --cache",
@@ -11,10 +11,14 @@
     "test:all": "vitest run --coverage.enabled=true",
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e:chrome-extension": "playwright test --project=chromium-extension",
     "test:e2e": "playwright test",
+    "debug:chrome-extension": "node scripts/debug-chrome-extension.mjs",
+    "log:debug-session": "node scripts/print-debug-session-log.mjs",
     "verify:versions": "node scripts/verify-extension-versions.js",
     "verify:extension-files": "node scripts/verify-extension-files.js",
-    "verify": "npm run verify:versions && npm run verify:extension-files && npm run lint && npm run typecheck && npm run test:all && npm run test:e2e",
+    "verify:store-constraints": "node scripts/verify-store-constraints.js",
+    "verify": "npm run verify:versions && npm run verify:extension-files && npm run verify:store-constraints && npm run lint && npm run typecheck && npm run test:all && npm run test:e2e",
     "prepare:firefox": "node scripts/prepare-firefox.js",
     "pack": "bash scripts/pack-extension.sh"
   },

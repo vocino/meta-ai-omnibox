@@ -20,6 +20,16 @@ on:
         required: false
         type: boolean
         default: false
+      # When true (set from repo variable CWS_SUBMIT), upload Chromium zip to Chrome Web Store.
+      submit_to_cws:
+        required: false
+        type: boolean
+        default: false
+      # Optional publish target passed to Chrome Web Store API (default or trustedTesters).
+      cws_publish_target:
+        required: false
+        type: string
+        default: "default"
     # Must be declared here and passed from the parent workflow — inherit alone does not expose repo secrets in reusable workflows.
     secrets:
       AMO_API_KEY:
@@ -28,6 +38,14 @@ on:
         required: false
       # Optional fallback if AMO_API_SECRET stays empty in Actions (paste same Mozilla JWT secret here).
       MOZ_AMO_JWT_SECRET:
+        required: false
+      CWS_EXTENSION_ID:
+        required: false
+      CWS_CLIENT_ID:
+        required: false
+      CWS_CLIENT_SECRET:
+        required: false
+      CWS_REFRESH_TOKEN:
         required: false
 
 permissions:
@@ -138,3 +156,63 @@ jobs:
           fi
           cd "${ROOT}"
           npx web-ext@8 "${wargs[@]}"
+
+      - name: Submit Chromium extension to Chrome Web Store
+        if: inputs.submit_to_cws
+        env:
+          CWS_EXTENSION_ID: ${{ secrets.CWS_EXTENSION_ID }}
+          CWS_CLIENT_ID: ${{ secrets.CWS_CLIENT_ID }}
+          CWS_CLIENT_SECRET: ${{ secrets.CWS_CLIENT_SECRET }}
+          CWS_REFRESH_TOKEN: ${{ secrets.CWS_REFRESH_TOKEN }}
+          CWS_PUBLISH_TARGET: ${{ inputs.cws_publish_target }}
+        run: |
+          set -euo pipefail
+          missing=()
+          [ -z "${CWS_EXTENSION_ID}" ] && missing+=(CWS_EXTENSION_ID)
+          [ -z "${CWS_CLIENT_ID}" ] && missing+=(CWS_CLIENT_ID)
+          [ -z "${CWS_CLIENT_SECRET}" ] && missing+=(CWS_CLIENT_SECRET)
+          [ -z "${CWS_REFRESH_TOKEN}" ] && missing+=(CWS_REFRESH_TOKEN)
+          if [ "${#missing[@]}" -ne 0 ]; then
+            echo "::error::Missing repository secrets: ${missing[*]}. Set CWS_EXTENSION_ID, CWS_CLIENT_ID, CWS_CLIENT_SECRET, and CWS_REFRESH_TOKEN under Settings -> Secrets and variables -> Actions -> Repository secrets."
+            exit 1
+          fi
+
+          VER="${{ steps.pack.outputs.version }}"
+          ZIP="dist/meta-ai-omnibox-chromium-v${VER}.zip"
+          [ -f "${ZIP}" ] || { echo "::error::Missing Chromium zip: ${ZIP}"; exit 1; }
+
+          token_response=$(curl -fsS -X POST "https://oauth2.googleapis.com/token" \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            --data-urlencode "client_id=${CWS_CLIENT_ID}" \
+            --data-urlencode "client_secret=${CWS_CLIENT_SECRET}" \
+            --data-urlencode "refresh_token=${CWS_REFRESH_TOKEN}" \
+            --data-urlencode "grant_type=refresh_token")
+          ACCESS_TOKEN=$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['access_token'])" "${token_response}")
+          if [ -z "${ACCESS_TOKEN}" ]; then
+            echo "::error::Failed to obtain Google OAuth access token."
+            exit 1
+          fi
+
+          upload_response=$(curl -fsS -X PUT \
+            "https://www.googleapis.com/upload/chromewebstore/v1.1/items/${CWS_EXTENSION_ID}" \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -H "x-goog-api-version: 2" \
+            -H "Content-Type: application/zip" \
+            --data-binary @"${ZIP}")
+          upload_state=$(python3 -c "import json,sys; print(json.loads(sys.argv[1]).get('uploadState',''))" "${upload_response}")
+          if [ "${upload_state}" != "SUCCESS" ]; then
+            echo "::error::Chrome Web Store upload failed: ${upload_response}"
+            exit 1
+          fi
+
+          publish_target="${CWS_PUBLISH_TARGET:-default}"
+          publish_response=$(curl -fsS -X POST \
+            "https://www.googleapis.com/chromewebstore/v1.1/items/${CWS_EXTENSION_ID}/publish?publishTarget=${publish_target}" \
+            -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+            -H "x-goog-api-version: 2")
+          status_values=$(python3 -c "import json,sys; data=json.loads(sys.argv[1]); print(','.join(data.get('status', [])))" "${publish_response}")
+          if [[ "${status_values}" != *OK* ]]; then
+            echo "::error::Chrome Web Store publish may have failed: ${publish_response}"
+            exit 1
+          fi
+          echo "Chrome Web Store publish status: ${status_values}"

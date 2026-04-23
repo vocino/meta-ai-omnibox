@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "Meta (Unofficial)",
   "short_name": "Meta",
-  "description": "Unofficial extension — not affiliated with Meta. Use @meta: in the address bar or the registered search engine to open meta.ai with your prompt.",
-  "version": "0.2.0",
+  "description": "Unofficial Meta omnibox extension. Type @meta: in the address bar to open meta.ai with your prompt.",
+  "version": "0.2.1",
   "permissions": ["activeTab", "storage"],
   "host_permissions": ["https://www.meta.ai/*", "https://meta.ai/*"],
   "icons": {
@@ -15,16 +15,6 @@
   },
   "omnibox": {
     "keyword": "@Meta"
-  },
-  "chrome_settings_overrides": {
-    "search_provider": {
-      "name": "Meta (Unofficial)",
-      "keyword": "@Meta",
-      "search_url": "https://www.meta.ai/?prompt={searchTerms}",
-      "encoding": "UTF-8",
-      "favicon_url": "icons/icon32.png",
-      "is_default": false
-    }
   },
   "action": {
     "default_title": "Meta (Unofficial) — open meta.ai",

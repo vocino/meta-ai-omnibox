@@ -1,5 +1,12 @@
 (function metaInjectMain() {
   const { query, settings, metaCore } = globalThis.__META_OMNIBOX__;
+
+  function getApi() {
+    if (typeof globalThis.browser !== "undefined") return globalThis.browser;
+    if (typeof globalThis.chrome !== "undefined") return globalThis.chrome;
+    return null;
+  }
+
   if (!query || !settings || !metaCore) return;
 
   const { PROMPT_PARAM } = query;
@@ -10,12 +17,6 @@
     submitComposer,
     waitForComposer,
   } = metaCore;
-
-  function getApi() {
-    if (typeof globalThis.browser !== "undefined") return globalThis.browser;
-    if (typeof globalThis.chrome !== "undefined") return globalThis.chrome;
-    return null;
-  }
 
   function getPromptFromUrl() {
     return query.readPromptFromUrl(window.location.href);
@@ -50,7 +51,9 @@
 
   async function run() {
     const prompt = getPromptFromUrl();
-    if (!prompt) return;
+    if (!prompt) {
+      return;
+    }
 
     const mode = await readSubmitMode();
     const composer = await waitForComposer();
@@ -63,6 +66,14 @@
     const alreadyFilled = existing.trim() === prompt.trim();
     if (!alreadyFilled) {
       fillComposer(composer, prompt);
+      const readComposer = () =>
+        composer instanceof HTMLTextAreaElement || composer instanceof HTMLInputElement
+          ? composer.value
+          : composer.textContent || "";
+      if (readComposer().trim() !== prompt.trim()) {
+        await new Promise((r) => requestAnimationFrame(r));
+        fillComposer(composer, prompt);
+      }
     }
     if (mode === SUBMIT_MODE_AUTO) {
       const el = composer;

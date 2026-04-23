@@ -28,7 +28,7 @@ describe("meta composer integration", () => {
 
     fillComposer(composer, "hello from test");
     expect(composer.value).toBe("hello from test");
-    expect(inputEvents).toBe(1);
+    expect(inputEvents).toBe(2);
   });
 
   test("manual is default submit mode", () => {

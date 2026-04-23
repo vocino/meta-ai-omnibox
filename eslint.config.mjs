@@ -26,6 +26,35 @@ export default [
     },
   },
   {
+    files: ["**/*.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+  },
+  {
+    files: ["scripts/print-debug-session-log.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      ecmaVersion: "latest",
+      sourceType: "module",
+    },
+  },
+  {
+    files: ["scripts/debug-chrome-extension.mjs"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+  },
+  {
     files: ["extension/background.js"],
     languageOptions: {
       globals: {

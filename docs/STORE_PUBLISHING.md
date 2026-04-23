@@ -38,7 +38,28 @@ The tag-sync job does not wait for CI to finish; keep `main` green before bumpin
 2. New item → upload `meta-ai-omnibox-chromium-vX.Y.Z.zip` from the GitHub Release for that version.
 3. Listing: emphasize **unofficial** / not affiliated with Meta; link to this repo and issue tracker.
 4. Privacy: describe use of `storage` for settings and host access to `meta.ai` / `www.meta.ai` only as declared in the manifest.
+   Use: <https://github.com/vocino/meta-ai-omnibox/blob/main/docs/privacy-policy.md>
 5. First review can take several days.
+
+### Automated submit + publish (CI)
+
+The **Release** workflow can upload each **Chromium** zip to the Chrome Web Store and trigger publish after the GitHub Release is created.
+
+1. **Chrome extension ID:** copy the item ID from your Chrome Web Store listing URL.
+2. **Google OAuth credentials:** create an OAuth client in Google Cloud that can call the Chrome Web Store API and generate a refresh token for the publisher account.
+3. **GitHub secrets** (repo → *Settings* → *Secrets and variables* → *Actions* — use these exact names):
+   - `CWS_EXTENSION_ID`
+   - `CWS_CLIENT_ID`
+   - `CWS_CLIENT_SECRET`
+   - `CWS_REFRESH_TOKEN`
+4. **Enable submits:** add repository variable **`CWS_SUBMIT`** = `true`.
+5. **Optional publish target:** add repository variable **`CWS_PUBLISH_TARGET`** as `default` (public) or `trustedTesters`.
+
+Behavior notes:
+
+- Upload + publish runs only when `CWS_SUBMIT=true`.
+- Missing CWS secrets fail the release job with an actionable message.
+- Keep `CWS_SUBMIT` unset on forks so release runs only build artifacts.
 
 ## Microsoft Edge Add-ons
 

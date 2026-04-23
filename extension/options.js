@@ -58,11 +58,13 @@
   const api = getExtensionApi();
   if (api?.storage?.onChanged) {
     api.storage.onChanged.addListener((changes, areaName) => {
-      if (areaName !== "local" || !changes.submitMode) return;
-      const next = normalizeSubmitMode(changes.submitMode.newValue);
-      const radio = document.querySelector(`input[name='submitMode'][value='${next}']`);
-      if (radio instanceof HTMLInputElement) {
-        radio.checked = true;
+      if (areaName !== "local") return;
+      if (changes.submitMode) {
+        const next = normalizeSubmitMode(changes.submitMode.newValue);
+        const radio = document.querySelector(`input[name='submitMode'][value='${next}']`);
+        if (radio instanceof HTMLInputElement) {
+          radio.checked = true;
+        }
       }
     });
   }

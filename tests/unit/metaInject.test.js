@@ -9,6 +9,7 @@ const {
   waitForComposer,
   tryClickSendButton,
   COMPOSER_SELECTORS,
+  gatherVisibleComposerCandidates,
 } = require("../../extension/lib/meta-core.js");
 
 function mockVisible(el, w = 100, h = 20) {
@@ -28,13 +29,31 @@ describe("findComposer", () => {
     expect(findComposer(document)).toBe(visible);
   });
 
-  test("prefers first visible match in selector order", () => {
-    document.body.innerHTML = "<textarea id='a'></textarea><textarea id='b'></textarea>";
-    const a = /** @type {HTMLTextAreaElement} */ (document.getElementById("a"));
-    const b = /** @type {HTMLTextAreaElement} */ (document.getElementById("b"));
-    mockVisible(a);
-    mockVisible(b);
-    expect(findComposer(document)).toBe(a);
+  test("prefers largest visible composer when several exist", () => {
+    document.body.innerHTML = "<textarea id='small'></textarea><textarea id='big'></textarea>";
+    const small = /** @type {HTMLTextAreaElement} */ (document.getElementById("small"));
+    const big = /** @type {HTMLTextAreaElement} */ (document.getElementById("big"));
+    mockVisible(small, 80, 20);
+    mockVisible(big, 400, 120);
+    expect(findComposer(document)).toBe(big);
+  });
+
+  test("when areas tie, prefers lower composer (larger getBoundingClientRect().bottom)", () => {
+    document.body.innerHTML = "<textarea id='top'></textarea><textarea id='bottom'></textarea>";
+    const top = /** @type {HTMLTextAreaElement} */ (document.getElementById("top"));
+    const bottom = /** @type {HTMLTextAreaElement} */ (document.getElementById("bottom"));
+    mockVisible(top, 100, 20);
+    mockVisible(bottom, 100, 20);
+    top.getBoundingClientRect = () => /** @type {any} */ ({ width: 100, height: 20, bottom: 80 });
+    bottom.getBoundingClientRect = () => /** @type {any} */ ({ width: 100, height: 20, bottom: 900 });
+    expect(findComposer(document)).toBe(bottom);
+  });
+
+  test("gatherVisibleComposerCandidates dedupes the same element across selectors", () => {
+    document.body.innerHTML = `<div id="ce" contenteditable="true" role="textbox"></div>`;
+    const ce = /** @type {HTMLElement} */ (document.getElementById("ce"));
+    mockVisible(ce);
+    expect(gatherVisibleComposerCandidates(document).length).toBe(1);
   });
 
   test("finds contenteditable when textarea absent", () => {
@@ -48,9 +67,31 @@ describe("findComposer", () => {
     document.body.innerHTML = "<p>no input</p>";
     expect(findComposer(document)).toBeNull();
   });
+
+  test("finds textarea inside an open shadow root", () => {
+    document.body.innerHTML = "<div id=\"host\"></div>";
+    const host = /** @type {HTMLElement} */ (document.getElementById("host"));
+    const shadow = host.attachShadow({ mode: "open" });
+    const ta = document.createElement("textarea");
+    mockVisible(ta);
+    shadow.appendChild(ta);
+    expect(findComposer(document)).toBe(ta);
+  });
 });
 
 describe("fillComposer", () => {
+  test("calls React _valueTracker setValue when present", () => {
+    document.body.innerHTML = "<textarea></textarea>";
+    const ta = /** @type {HTMLTextAreaElement} */ (document.querySelector("textarea"));
+    mockVisible(ta);
+    const setValue = vi.fn();
+    /** @type {any} */ (ta)._valueTracker = { setValue };
+    fillComposer(ta, "tracked");
+    expect(ta.value).toBe("tracked");
+    expect(setValue).toHaveBeenCalled();
+    expect(setValue.mock.calls.some((c) => c[0] === "tracked")).toBe(true);
+  });
+
   test("fills contenteditable div", () => {
     document.body.innerHTML = `<div id="ce" contenteditable="true"></div>`;
     const el = /** @type {HTMLElement} */ (document.getElementById("ce"));

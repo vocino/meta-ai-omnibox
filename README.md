@@ -2,7 +2,7 @@
 
 > **Unofficial.** This is an independent open-source project. It is **not** affiliated with, endorsed by, or sponsored by Meta Platforms, Inc. “Meta” and “Meta AI” are trademarks of their respective owners.
 
-Type `@meta:` in your browser omnibox (or `@meta` followed by a space), or use the **Meta (Unofficial)** search engine entry to open [meta.ai](https://www.meta.ai/) with your prompt.
+Type `@meta:` in your browser omnibox (or `@meta` followed by a space) to open [meta.ai](https://www.meta.ai/) with your prompt. **Firefox** also registers a **Meta (Unofficial)** search engine (same keyword) via `chrome_settings_overrides`; Chromium builds omit that block because Chrome only allows those overrides on Windows and macOS, not Linux.
 
 ## Features
 - Omnibox keyword: `@meta` (browsers may render it with different casing)
@@ -79,10 +79,14 @@ The preference is stored in `storage.local` under `submitMode`.
 - Install dependencies: `npm ci`
 - Aligned semver (package + all manifests): `npm run verify:versions`
 - Lint: `npm run lint:all`
+- Store upload constraints (manifest sanity): `npm run verify:store-constraints`
 - Type-check: `npm run typecheck`
 - Unit + integration tests: `npm run test:all`
 - E2E tests (Chromium): `npm run test:e2e:chromium`
 - E2E tests (Firefox): `npm run test:e2e:firefox`
+- **Chrome extension** (real MV3 load; Playwright’s Chromium only): `npm run test:e2e:chrome-extension` — service worker + options page + **mocked `https://www.meta.ai` HTML** (route fulfilled by Playwright) so the content script fills the composer without calling Meta’s servers. Default `npm run test:e2e` / `verify` includes this project.
+- **Live Meta.ai** (optional): `META_AI_EXTENSION_E2E=1 npm run test:e2e:chrome-extension` hits the real site and asserts the composer DOM contains the prompt; **skips** if the response is not 2xx (e.g. **403** to bots). Content scripts run in an isolated world — tests assert **DOM**, not `window` globals from page JS.
+- **Debug helper** (prints JSON + saves `test-results/chrome-extension-debug.png`): `npm run debug:chrome-extension` — add `--mock` to fulfill a minimal `meta.ai` page (same idea as integration tests). Add `--headed --stay-open` to use DevTools. Without `--mock`, a **403** from Meta means no composer text — use real Chrome + unpacked `extension/` to confirm. Filling only runs when the URL has a **`prompt` param** (e.g. from `@meta:`).
 - Full verification: `npm run verify`
 - Package store zips: `npm run pack` → `dist/meta-ai-omnibox-chromium-v{version}.zip` and `dist/meta-ai-omnibox-firefox-v{version}.zip` (version from `extension/manifest.json`)
 - `test:all` enforces minimum coverage thresholds for `extension/lib/` (see `vitest.config.js`).
@@ -91,6 +95,7 @@ The preference is stored in `storage.local` under `submitMode`.
 - PR and push checks run aligned-version guard, lint, typecheck, unit, integration, and E2E.
 - Nightly regression runs browser E2E to detect Meta.ai DOM drift.
 - **Release** workflow: on **`main`**, creates **`v{manifest.version}`** when missing; **only the tag-triggered run** publishes a new GitHub Release for a fresh tag (avoids duplicate publishers). If the tag already existed without a release, the next **`main`** run **backfills** the Release. All pack + release steps live in **`release-bundles.yml`** (reusable) so Chromium and Firefox assets stay consistent.
+- **Chrome Web Store (optional):** set repo variable **`CWS_SUBMIT=true`** and secrets **`CWS_EXTENSION_ID`**, **`CWS_CLIENT_ID`**, **`CWS_CLIENT_SECRET`**, **`CWS_REFRESH_TOKEN`** so tagged releases also upload + publish the Chromium zip. Optional variable **`CWS_PUBLISH_TARGET`** supports `default` or `trustedTesters`. First-time listing metadata still belongs in the dashboard; details: [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md#automated-submit--publish-ci).
 - **Firefox AMO (optional):** set repo variable **`AMO_SUBMIT=true`** and secrets **`AMO_API_KEY`** / **`AMO_API_SECRET`** so tagged releases also run **`web-ext sign`** against the Firefox zip. First-time listing: see [docs/STORE_PUBLISHING.md](docs/STORE_PUBLISHING.md#automated-submit-ci).
 - `workflow_dispatch` with an empty **publish_tag** runs verify + pack + artifact upload only (no GitHub Release).
 - Dependabot updates npm dependencies weekly.
@@ -105,6 +110,8 @@ The preference is stored in `storage.local` under `submitMode`.
 ## Issues and feedback
 
 If something breaks, behaves oddly, or could work better, please **[open an issue on GitHub](https://github.com/vocino/meta-ai-omnibox/issues)**. Bug reports, feature ideas, and compatibility notes (browser version, OS) are all welcome.
+
+Privacy policy: [docs/privacy-policy.md](docs/privacy-policy.md)
 
 Author: [Vocino](https://threads.net/@vocino)
 
