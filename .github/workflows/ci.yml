@@ -79,7 +79,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, chromium-extension]
+        include:
+          - browser: chromium
+            install_browser: chromium
+          - browser: firefox
+            install_browser: firefox
+          - browser: chromium-extension
+            install_browser: chromium
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -94,7 +100,7 @@ jobs:
         run: npm ci
 
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        run: npx playwright install --with-deps ${{ matrix.install_browser }}
 
       - name: Run E2E
         run: npx playwright test --project=${{ matrix.browser }}
