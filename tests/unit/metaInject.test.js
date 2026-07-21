@@ -180,7 +180,7 @@ describe("waitForComposer", () => {
     const pending = waitForComposer({ doc: document, timeoutMs: 2000 });
 
     await new Promise((resolve) => {
-      queueMicrotask(() => resolve());
+      queueMicrotask(() => resolve(undefined));
     });
 
     const ta = document.createElement("textarea");
