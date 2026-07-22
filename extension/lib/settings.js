@@ -69,7 +69,7 @@
               reject(runtime.lastError);
               return;
             }
-            resolve();
+            resolve(void 0);
           });
         });
       },
