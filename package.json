@@ -43,7 +43,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.0",
     "@types/node": "^26.1.1",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^4.1.11",
     "eslint": "^10.8.0",
     "globals": "^17.7.0",
     "jsdom": "^29.1.1",
